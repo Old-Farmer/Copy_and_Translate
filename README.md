@@ -28,6 +28,8 @@ It is a very simple app which copies and translates seleted text.
 
 * urllib
 
+* winreg (Windows)
+
 ## Basic Usage
 
 **Please ensure that you can access the Google Translate website.**

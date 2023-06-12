@@ -38,6 +38,8 @@ Select text, press`F2`, then translation results will be shown.
 
 Or just type sth. into the input textbox, press `Enter`, then translation results will be shown.
 
+![example.png](./img/example.png)
+
 ## Advanced Usage
 
 Coming soon...

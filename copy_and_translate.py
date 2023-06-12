@@ -10,7 +10,7 @@ from pynput import keyboard as kb
 # import asyncio
 # import httpx
 import time
-# import langid
+import langid
 # import keyboard as kb
 # import re
 from googletrans import Translator  # must be >=4.0.0rc1
@@ -52,6 +52,17 @@ def LoadSettings():
 
 def SaveSettings():
     DumpData(settings_file_name, settings)
+    
+
+def ProcessText(text):
+    '''
+    Mostly for PDF
+    '''
+    lang, _ = langid.classify(text)
+    if lang in ['zh', 'ja']: # Chinese, Japanese... do not need space to sep words
+        return text.replace('\r', '').replace('\n', '')
+    else:
+        return text.replace('\r', ' ').replace('\n', '') # /r -> space
 
 
 def Md5Encrypt(input_string):
@@ -243,8 +254,7 @@ class Gui:
 
         # trans = BaiduTranslate(content.replace('\n', '\\n'), 'en')[1].replace('\\', '\n') # baidu api has some problems with '\n'
 
-        # here ignore \r & \n, for pdf
-        content = content.replace('\r', '').replace('\n', '')
+        content = ProcessText(content)
         # print(content)
         self.inputText_.delete("1.0", tk.END)
         self.inputText_.insert(tk.END, content)

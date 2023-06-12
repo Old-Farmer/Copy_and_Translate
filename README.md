@@ -15,6 +15,7 @@ It is a very simple app which copies and translates seleted text.
 * pyperclip
 * tkinter
 * pynput
+* langid
 * googletrans>=4.0.0rc1
 * httpcore
 * urllib

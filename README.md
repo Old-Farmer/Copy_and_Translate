@@ -9,7 +9,7 @@ It is a very simple app which copies and translates seleted text.
 
 ## Depencies
 
-### For Linux
+### For Linux (Ubuntu)
 
 * xclip
 
@@ -30,7 +30,7 @@ None
 * tkinter 
 
 ```shell
-sudo apt install python3-tk # For Linux
+sudo apt install python3-tk # For Linux (Ubuntu)
 ```
 
 * pynput

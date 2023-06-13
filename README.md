@@ -7,19 +7,38 @@ It is a very simple app which copies and translates seleted text.
 * python3.0+, the newer the better
 * **Linux** & **Windows**. It maybe can work on **Mac** but not be tested.
 
-## Depencies(Python Libraries)
+## Depencies
+
+### For Linux
+
+* xclip
+
+```shell
+sudo apt install xclip
+```
+
+### For Windows
+
+None
+
+### Python Libraries (Using pip or other package managers)
 
 * hashlib
 * requests
 * secrets
 * pyperclip
-* tkinter
+* tkinter 
+
+```shell
+sudo apt install python3-tk # For Linux
+```
+
 * pynput
 * langid
 * googletrans>=4.0.0rc1
 * httpcore
 * urllib
-* winreg (Windows)
+* winreg **(For Windows)**
 
 ## Basic Usage
 
@@ -34,3 +53,19 @@ Or just type sth. into the input textbox, press `Enter`, then translation result
 ## Advanced Usage
 
 Coming soon...
+
+## Language Support
+
+* Chinese(simplified) 简体中文
+
+* Chinese(traditional) 繁體中文
+
+* English
+
+* French Français
+
+* Russian Русскийязык
+
+* Japanese 日本語
+
+* Korean 한국어

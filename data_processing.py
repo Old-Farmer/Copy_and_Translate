@@ -1,7 +1,9 @@
 import json
 
-settings_file_name = 'ct_settings.json'
+configs_file = 'configs.json'
+settings_file = 'settings.json'
 
+configs = dict()
 settings = dict()
 
 def DumpData(file_name, data):

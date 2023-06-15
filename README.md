@@ -96,7 +96,6 @@ All Settings is in `settings.json`. Please **restart** the app if you change the
 * Russian Русскийязык
 * Japanese 日本語
 * Korean 한국어
-* 
 
 ## Customize languages
 

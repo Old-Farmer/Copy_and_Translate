@@ -46,7 +46,7 @@ def LoadConfigs():
 
     # customize language data loc
     # pytesseract.pytesseract.tesseract_cmd = 'tesseract'
-    tessdata_dir_config = configs['tessdata_dir_config']
+    tessdata_dir_config = '--tessdata-dir ' + configs['tessdata_dir']
 
 
 def SaveConfigs():
@@ -111,8 +111,8 @@ def ProcessText(text):
 
 
 class BaiduAPITranslator:
-    kRequestURL = configs['request_url']
-    languages_for_baidu_api = configs['languages_for_baidu_api']
+    request_url_ = settings['request_url_for_baidu_api']
+    languages_for_baidu_api_ = configs['languages_for_baidu_api']
 
     def __init__(self, appid, private_key):
         self.appid_ = appid
@@ -145,9 +145,9 @@ class BaiduAPITranslator:
                                     + params['q'] + params['salt'] + self.private_key_)
 
         # async with httpx.AsyncClient() as client:
-        #   r = await client.get(kRequestURL, params=params)
+        #   r = await client.get(request_url_, params=params)
 
-        r = requests.get(BaiduAPITranslator.kRequestURL, params=params)
+        r = requests.get(BaiduAPITranslator.request_url_, params=params)
 
         if r.status_code != 200:
             return 0, 'Error happend, try again!'
@@ -162,15 +162,15 @@ class BaiduAPITranslator:
 
     def TranslateWrapper(self, src_text, src_lang_index, dest_lang_index):
         src_lang = 'auto' if src_lang_index == len(
-            src_languages) - 1 else BaiduAPITranslator.languages_for_baidu_api[src_lang_index]
+            src_languages) - 1 else BaiduAPITranslator.languages_for_baidu_api_[src_lang_index]
         return self.Translate(
-            src_text, src_language=src_lang, dest_language=BaiduAPITranslator.languages_for_baidu_api[dest_lang_index])
+            src_text, src_language=src_lang, dest_language=BaiduAPITranslator.languages_for_baidu_api_[dest_lang_index])
 
 
 class GoogleTranslator:
     '''
     '''
-    languages_for_google = configs['languages_for_google']
+    languages_for_google_ = configs['languages_for_google']
 
     def __init__(self):
         if system_name == 'Linux' or system_name == 'Darwin':  # linux or mac
@@ -220,9 +220,9 @@ class GoogleTranslator:
 
     def TranslateWrapper(self, src_text, src_lang_index, dest_lang_index):
         src_lang = 'auto' if src_lang_index == len(
-            src_languages) - 1 else GoogleTranslator.languages_for_google[src_lang_index]
+            src_languages) - 1 else GoogleTranslator.languages_for_google_[src_lang_index]
         return self.Translate(
-            src_text, src_language=src_lang, dest_language=GoogleTranslator.languages_for_google[dest_lang_index])
+            src_text, src_language=src_lang, dest_language=GoogleTranslator.languages_for_google_[dest_lang_index])
 
 
 class Gui:
@@ -231,9 +231,9 @@ class Gui:
         # init translator
         engine = settings['engine']
         if engine == 'google':
-            self.translator = GoogleTranslator()
+            self.translator_ = GoogleTranslator()
         elif engine == 'baidu_api':
-            self.translator = BaiduAPITranslator(
+            self.translator_ = BaiduAPITranslator(
                 settings['appid'], settings['private_key'])
         else:
             print('Please choose a translation engine')
@@ -254,15 +254,15 @@ class Gui:
             self.window_, values=dest_languages)
         self.outputText_ = tk.Text(
             self.window_, height=18, width=30)
-        
+
         if settings['mode'] == 'dark':
             self.inputText_.configure(background='#292421', foreground='white')
-            self.outputText_.configure(background='#292421', foreground='white')
+            self.outputText_.configure(
+                background='#292421', foreground='white')
             # still have some problem of the TCombobox color
             ttk.Style().configure('TCombobox', fieldbackground='#292421', foreground='white')
             self.window_.option_add('*TCombobox*Foreground', 'white')
             self.window_.option_add('*TCombobox*Background', '#292421')
-
 
         self.src_lang_combox_.grid(row=0, column=0, sticky='ew')
         self.inputText_.grid(row=1, column=0, sticky=tk.NSEW)
@@ -362,11 +362,12 @@ class Gui:
         src_lang_index = self.src_lang_combox_.current()
         dest_lang_index = self.dest_lang_combox_.current()
 
-        _, trans = self.translator.TranslateWrapper(
+        _, trans = self.translator_.TranslateWrapper(
             content, src_lang_index, dest_lang_index)
 
         self.outputText_.delete("1.0", tk.END)
         self.outputText_.insert(tk.END, trans)
+
 
 if __name__ == '__main__':
     gui = Gui()

@@ -35,6 +35,7 @@ sudo apt install tessertact-ocr # xclip
 * httpcore
 * winreg **(For Windows)**
 * pytessertact
+* tqdm
 
 ```shell
 # For linux (Ubuntu)
@@ -63,12 +64,19 @@ Or just type sth. into the input textbox, press `Enter`, then translation result
 
 press `F4`, select the screen area, then translation results will be shown. Auto source language is not supported here.
 
+## Run
+
+Directly run the `run.py`.
+
+**Attention:**  if you **first** run the app, run `setup.py` first to **do some setups**， which will take some time.
+
 ## Settings
 
 All Settings is in `settings.json`. Please **restart** the app if you change the file.
 
 ```json
 {
+    "request_url_for_baidu_api": "",
 
     "private_key": "",
 
@@ -81,7 +89,7 @@ All Settings is in `settings.json`. Please **restart** the app if you change the
 }
 ```
 
-`"engine"` can be set as `"google"` or `"baidu_api"`. If it is set as `"baidu_api"`, `"private_key"` and `"appid"` is needed (通用文本翻译,  https://api.fanyi.baidu.com/ ).
+`"engine"` can be set as `"google"` or `"baidu_api"`. If it is set as `"baidu_api"`, `"request_url_for_baidu_api"`,   `"private_key"`and `"appid"` is required ( the corresponding website is https://api.fanyi.baidu.com/  ).
 
 `"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required.
 

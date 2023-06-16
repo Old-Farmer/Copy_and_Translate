@@ -1,6 +1,7 @@
 {
-  "private_key": "",
-  "appid": "",
-  "engine": "google",
-  "mode": "dark"
+    "request_url_for_baidu_api": "",
+    "private_key": "",
+    "appid": "",
+    "engine": "google",
+    "mode": "dark"
 }

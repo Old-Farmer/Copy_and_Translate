@@ -12,17 +12,17 @@ It is an easy-to-use app which can translate selected text without copying manua
 ### For Linux (Ubuntu)
 
 * xclip
-* tessertact ocr engine (**no data file need to be downloaded**. They are all in `tessdata/`)
+* tesseract ocr engine (**no data file need to be downloaded**. They are all in `tessdata/`)
 
 ```shell
 sudo apt install xclip # xclip
-sudo apt install tessertact-ocr # xclip
+sudo apt install tesseract-ocr # tesseract ocr engine
 ```
 
 ### For Windows
 
-* tessertact ocr engine (**no data file need to be downloaded**. They are all in `tessdata/`)
-  [Introduction | tessdoc](https://tesseract-ocr.github.io/tessdoc/Installation.html) Follow this site and install the tessertact. Do not forget to set the **environment variable**.
+* tesseract ocr engine (**no data file need to be downloaded**. They are all in `tessdata/`)
+  [Introduction | tessdoc](https://tesseract-ocr.github.io/tessdoc/Installation.html) Check this website and install the tessertact. Do not forget to set the **environment variable**.
 
 ### Requirements (Python external lib)
 
@@ -34,7 +34,7 @@ sudo apt install tessertact-ocr # xclip
 * googletrans>=4.0.0rc1
 * httpcore
 * winreg **(For Windows)**
-* pytessertact
+* pytesseract
 * tqdm
 
 ```shell

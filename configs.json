@@ -43,5 +43,5 @@
         "light", 
         "dark"
     ],
-    "tessdata_dir": "./tessdata"
+    "tessdata_dir": "tessdata"
 }

@@ -1,6 +1,6 @@
-# Copy and Translate
+# Easytrans
 
-It is an easy-to-use app which automatically copies and translates selected text.
+It is an easy-to-use app which can translate selected text without copying manually.
 
 ## Environment
 
@@ -83,7 +83,7 @@ All Settings is in `settings.json`. Please **restart** the app if you change the
 
 `"engine"` can be set as `"google"` or `"baidu_api"`. If it is set as `"baidu_api"`, `"private_key"` and `"appid"` is needed (通用文本翻译,  https://api.fanyi.baidu.com/ ).
 
-`"google"` engine uses googletrans lib, so using it is totally free and no configuration is required.
+`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required.
 
 `"mode"` can be set as `"dark"` or `"light"`.
 

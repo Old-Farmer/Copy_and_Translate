@@ -1,6 +1,6 @@
 # test script
 
-import copy_and_translate
+import easytrans
 
 if __name__ == '__main__':
-    gui = copy_and_translate.Gui()
+    gui = easytrans.Gui()

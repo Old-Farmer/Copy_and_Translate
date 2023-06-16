@@ -13,7 +13,7 @@ from pynput import keyboard as kb
 import time
 import langid
 # import keyboard as kb
-# import re
+import re
 from googletrans import Translator  # must be >=4.0.0rc1
 from httpcore import SyncHTTPProxy
 from urllib.parse import urlparse
@@ -23,6 +23,10 @@ from data_processing import DumpData, LoadData, configs, configs_file, settings,
 import subprocess
 import pytesseract
 from PIL import ImageGrab
+
+# # const
+# kText = 0
+# kImage = 1
 
 # golbal var
 languages = []
@@ -100,14 +104,23 @@ def PrintSceenToClipboard():
 
 def ProcessText(text):
     '''
-    Mostly for PDF
+    Mostly for PDF; Process copied text and image ocr results
     '''
+    def Replace(match):
+        match_str = match.group(0)
+        if match_str == '—\n':
+            return ''
+        else:
+            return ' '
+    
+    
     lang, _ = langid.classify(text)
     if lang in ['zh', 'ja']:  # Chinese, Japanese... do not need space to sep words
-        return text.replace('\r', '').replace('\n', '').replace('\f', '')
+        # simply ignore '\r' '\n' '\f' '\t'
+        return re.sub(r'[\r\n\f\t]+', '', text)
     else:
-        # /n -> space, '  ' -> ' '
-        return text.replace('\r', '').replace('\n', ' ').replace('\f', '')
+        # ignore em-dash '—' (\u1024) + '\n', for ocr results; a bunch of '/n' '\r' '\f' '\t -> one space
+        return re.sub(r'[\r\n\f\t]+|—\n', Replace, text)
 
 
 class BaiduAPITranslator:

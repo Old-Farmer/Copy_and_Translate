@@ -40,7 +40,7 @@
         "kor"
     ],
     "modes": [
-        "light", 
+        "light",
         "dark"
     ],
     "tessdata_dir": "tessdata"

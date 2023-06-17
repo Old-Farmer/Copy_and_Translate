@@ -2,9 +2,14 @@
 
 It is an easy-to-use app which can translate selected text without copying manually.
 
+## Maybe Coming soon
+
+* Chatgpt engine only requiring username and password
+* Chatgpt api engine
+
 ## Environment
 
-* python 3.10+, the newer the better
+* python 3.10+. A lower version may be ok.
 * **Linux** & **Windows**. **But this app is not fully tested on Windows. So I do not guarantee the correctness of it on Windows.**
 
 ## Depencies
@@ -12,7 +17,7 @@ It is an easy-to-use app which can translate selected text without copying manua
 ### For Linux (Ubuntu)
 
 * xclip
-* tesseract ocr engine (**no data file need to be downloaded**. They are all in `tessdata/`)
+* tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata`)
 
 ```shell
 sudo apt install xclip # xclip
@@ -21,8 +26,8 @@ sudo apt install tesseract-ocr # tesseract ocr engine
 
 ### For Windows
 
-* tesseract ocr engine (**no data file need to be downloaded**. They are all in `tessdata/`)
-  [Introduction | tessdoc](https://tesseract-ocr.github.io/tessdoc/Installation.html) Check this website and install the tessertact. Do not forget to set the **environment variable**.
+* tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata/`)
+  Check the website [Introduction | tessdoc](https://tesseract-ocr.github.io/tessdoc/Installation.html) and install the tesseract. Do not forget to set the **environment variable**.
 
 ### Requirements (Python external lib)
 
@@ -50,8 +55,6 @@ pip install -r requirements_Windows.txt
 
 ## Usage
 
-**Please ensure that you can access the Google Translate website.**
-
 ### Text translation
 
 Select text, press `F2`, then translation results will be shown.
@@ -68,11 +71,11 @@ press `F4`, select the screen area, then translation results will be shown. Auto
 
 Directly run the `run.py`.
 
-**Attention:**  if you **first** run the app, run `setup.py` first to **do some setups**， which will take some time.
+**Attention:**  if you **first** run the app, run `setup.py` first to **do some setups,** which will take some time.
 
 ## Settings
 
-All Settings is in `settings.json`. Please **restart** the app if you change the file.
+All Settings is in `data/settings.json`. Please **restart** the app if you change the file.
 
 ```json
 {
@@ -89,9 +92,11 @@ All Settings is in `settings.json`. Please **restart** the app if you change the
 }
 ```
 
-`"engine"` can be set as `"google"` or `"baidu_api"`. If it is set as `"baidu_api"`, `"request_url_for_baidu_api"`,   `"private_key"`and `"appid"` is required ( the corresponding website is https://api.fanyi.baidu.com/  ).
+`"engine"` can be set as `"google"` or `"baidu_api"`.
 
-`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required.
+If it is set as `"baidu_api"`, `"request_url_for_baidu_api"`,   `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` is required ( The corresponding website is https://api.fanyi.baidu.com/  ).
+
+`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.**
 
 `"mode"` can be set as `"dark"` or `"light"`.
 
@@ -109,6 +114,6 @@ All Settings is in `settings.json`. Please **restart** the app if you change the
 
 If you want to add other languages, Please follow the following steps:
 
-1. Find the `configs.json` file.
+1. Find the `data/configs.json` file.
 2. Focus on `"languages"`, `"languages_for_google"`, `"languages_for_baidu_api"`, `"languages_for_tessertact"`. If you never use baidu api, you can ignore `"languages_for_baidu_api"`. The last three kv pairs are perfectly matching with the first one. For example, `"Chinese (Simplified)"` in  `"languages"` <=> `"zh-cn"` in `"languages_for_google"`.
-3. What you should do is to add sth and to keep the match. Add a language name in `"languages"`, and then add the corresponding language code referenced by [Googletrans: Free and Unlimited Google translate API for Python — Googletrans 3.0.0 documentation](https://py-googletrans.readthedocs.io/en/latest/) in `"languages_for_google"` at the same index. Samely, if you want to use baidu api, add the corresponding language code referenced by [百度翻译开放平台](https://api.fanyi.baidu.com/doc/21) in `"languages_for_baidu_api"` at the same index.  Last, add the corresponding language code in `"languages_for_tessertact"` at the same index, and **download** the corresponding data file to `tessdata/`, referenced by [Traineddata Files for Version 4.00 + | tessdoc](https://tesseract-ocr.github.io/tessdoc/Data-Files.html).
+3. What you should do is to add sth and to keep the match. Add a language name in `"languages"`, and then add the corresponding language code referenced by [Googletrans: Free and Unlimited Google translate API for Python — Googletrans 3.0.0 documentation](https://py-googletrans.readthedocs.io/en/latest/) in `"languages_for_google"` at the same index. Samely, if you want to use baidu api, add the corresponding language code referenced by [百度翻译开放平台](https://api.fanyi.baidu.com/doc/21) in `"languages_for_baidu_api"` at the same index.  Last, add the corresponding language code in `"languages_for_tessertact"` at the same index, and **download** the corresponding data file to `data/tessdata`, referenced by [Traineddata Files for Version 4.00 + | tessdoc](https://tesseract-ocr.github.io/tessdoc/Data-Files.html).

@@ -1,7 +1,8 @@
 import json
+from easytrans.paths import AbsolutePath
 
-configs_file = 'configs.json'
-settings_file = 'settings.json'
+configs_file = AbsolutePath('data/configs.json')
+settings_file = AbsolutePath('data/settings.json')
 
 configs = dict()
 settings = dict()

@@ -18,11 +18,13 @@ from googletrans import Translator  # must be >=4.0.0rc1
 from httpcore import SyncHTTPProxy
 from urllib.parse import urlparse
 
-from data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
+from easytrans.data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
 
 import subprocess
 import pytesseract
 from PIL import ImageGrab
+
+from easytrans.paths import AbsolutePath
 
 # # const
 # kText = 0
@@ -50,7 +52,7 @@ def LoadConfigs():
 
     # customize language data loc
     # pytesseract.pytesseract.tesseract_cmd = 'tesseract'
-    tessdata_dir_config = '--tessdata-dir ' + configs['tessdata_dir']
+    tessdata_dir_config = '--tessdata-dir ' + AbsolutePath(configs['tessdata_dir'])
 
 
 def SaveConfigs():
@@ -76,7 +78,6 @@ def PrintSceenToClipboard():
     Using tools for printscreen
     Windows & Macos haven't been tested yet
     '''
-    system_name = platform.system()
     if system_name == 'Linux':  # linux
         try:
             subprocess.run(['gnome-screenshot', '-c', '-a'], check=True)
@@ -108,19 +109,20 @@ def ProcessText(text):
     '''
     def Replace(match):
         match_str = match.group(0)
-        if match_str == '—\n':
+        if match_str[0] == '—':
             return ''
         else:
             return ' '
     
     
     lang, _ = langid.classify(text)
-    if lang in ['zh', 'ja']:  # Chinese, Japanese... do not need space to sep words
-        # simply ignore '\r' '\n' '\f' '\t'
-        return re.sub(r'[\r\n\f\t]+', '', text)
+    if lang in ['zh', 'ja']:  # Chinese, Japanese... do not need spaces to sep words
+        # simply ignore '\r' '\n' '\f'
+        return re.sub(r'[\r\n\f]+', '', text)
     else:
-        # ignore em-dash '—' (\u1024) + '\n', for ocr results; a bunch of '/n' '\r' '\f' '\t -> one space
-        return re.sub(r'[\r\n\f\t]+|—\n', Replace, text)
+        # ignore em-dash '—' (\u1024) + new_line, for ocr results; a bunch of '/n' '\r' '\f' -> one space
+        return re.sub(r'[\r\n\f]+|—\n', Replace, text)
+        # return re.sub(r'[\r\n\f]+|—[\r\n]+', Replace, text)
 
 
 class BaiduAPITranslator:
@@ -247,7 +249,7 @@ class Gui:
             self.translator_ = GoogleTranslator()
         elif engine == 'baidu_api':
             self.translator_ = BaiduAPITranslator(
-                settings['appid'], settings['private_key'])
+                settings['appid_for_baidu_api'], settings['private_key_for_baidu_api'])
         else:
             print('Please choose a translation engine')
             exit(0)
@@ -381,6 +383,8 @@ class Gui:
         self.outputText_.delete("1.0", tk.END)
         self.outputText_.insert(tk.END, trans)
 
+def Start():
+    gui = Gui()
 
 if __name__ == '__main__':
-    gui = Gui()
+    Start()

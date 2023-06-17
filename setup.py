@@ -2,12 +2,13 @@ import urllib.request
 import os
 from tqdm import tqdm
 
-from data_processing import configs, configs_file, LoadData
+from easytrans.data_processing import configs, configs_file, LoadData
+from easytrans.paths import AbsolutePath
 
 configs = LoadData(configs_file)
 
 # download language data files
-tessdata_dir = configs['tessdata_dir']
+tessdata_dir =  AbsolutePath(configs['tessdata_dir'])
 if not os.path.exists(tessdata_dir):
     os.makedirs(tessdata_dir)
 
@@ -59,3 +60,5 @@ for lang in languages:
 
     url = url_base + '/' + file_name
     DownloadFileWithProgressBar(url, save_path)
+
+print('Setup OK')

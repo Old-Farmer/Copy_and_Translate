@@ -2,7 +2,7 @@
 
 It is an easy-to-use app which can translate selected text without copying manually.
 
-## Maybe Coming soon
+## Maybe coming soon
 
 * Chatgpt engine only requiring username and password
 * Chatgpt api engine
@@ -81,9 +81,9 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 {
     "request_url_for_baidu_api": "",
 
-    "private_key": "",
+    "private_key_for_baidu_api": "",
 
-    "appid": "",
+    "appid_for_baidu_api": "",
 
     "engine": "google",
 

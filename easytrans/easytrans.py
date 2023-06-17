@@ -7,24 +7,23 @@ import pyperclip
 import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkfont
-from pynput import keyboard as kb
 # import asyncio
 # import httpx
 import time
 import langid
-# import keyboard as kb
+from pynput.keyboard import Key
 import re
 from googletrans import Translator  # must be >=4.0.0rc1
 from httpcore import SyncHTTPProxy
 from urllib.parse import urlparse
-
-from easytrans.data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
-
 import subprocess
 import pytesseract
 from PIL import ImageGrab
+import concurrent.futures
 
+from easytrans.data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
 from easytrans.paths import AbsolutePath
+from easytrans.utils import KeyController, KeyListener
 
 # # const
 # kText = 0
@@ -52,7 +51,8 @@ def LoadConfigs():
 
     # customize language data loc
     # pytesseract.pytesseract.tesseract_cmd = 'tesseract'
-    tessdata_dir_config = '--tessdata-dir ' + AbsolutePath(configs['tessdata_dir'])
+    tessdata_dir_config = '--tessdata-dir ' + \
+        AbsolutePath(configs['tessdata_dir'])
 
 
 def SaveConfigs():
@@ -85,13 +85,7 @@ def PrintSceenToClipboard():
         except subprocess.CalledProcessError:
             return 0
     elif system_name == 'Windows':  # Windows
-        controller = kb.Controller()
-        controller.press(kb.Key.shift)
-        controller.press(kb.Key.cmd)
-        controller.press('s')
-        controller.release(kb.Key.shift)
-        controller.release(kb.Key.cmd)
-        controller.release('s')
+        KeyController().Type([Key.shift, Key.cmd, 's'])
         return 1
     elif system_name == 'Darwin':  # Macos
         try:
@@ -113,8 +107,7 @@ def ProcessText(text):
             return ''
         else:
             return ' '
-    
-    
+
     lang, _ = langid.classify(text)
     if lang in ['zh', 'ja']:  # Chinese, Japanese... do not need spaces to sep words
         # simply ignore '\r' '\n' '\f'
@@ -292,71 +285,77 @@ class Gui:
         self.src_lang_combox_.current(len(src_languages) - 1)
         self.dest_lang_combox_.current(0)
 
-        self.kbController_ = kb.Controller()
+        self.kbController_ = KeyController()
 
-        self.listener_ = kb.Listener(on_press=self.OnPress)
+        self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.RegisterTextTranslate,
+                                      settings['screenshot_translate_shortcut_key']: self.RegisterScreenshotTranslate})
         self.listener_.start()
         # self.listener_.join()
 
-        self.inputText_.bind('<Return>', self.DoTrans)
+        self.inputText_.bind('<Return>', self.RegisterDoTrans)
         # self.src_lang_combox_.bind(
         #     '<<ComboboxSelected>>', self.HandleSrcLanguageSelect)
         # self.dest_lang_combox_.bind(
         #     '<<ComboboxSelected>>', self.HandleDestLanguageSelect)
 
+        # self.trans_lock_ = threading.Lock()
+
+        # backend thread for time consuming tasks
+        self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        
         self.window_.mainloop()
 
-    # def HandleSrcLanguageSelect(self, event):
-    #     global src_lang_index
-    #     src_lang_index = self.src_lang_combox_.current()
+    def TextTranslate(self):
+        # if self.trans_lock_.acquire(False) == False:
+        #     return
 
-    # def HandleDestLanguageSelect(self, event):
-    #     global dest_lang_index
-    #     dest_lang_index = self.dest_lang_combox_.current()
+        pre_content = pyperclip.paste()
 
-    def OnPress(self, key):
-        if key == kb.Key.f2:
-            pre_content = pyperclip.paste()
+        # with self.kbController_.pressed(kb.Key.ctrl):
+        #   self.kbController_.press('c')
+        self.kbController_.Type([Key.ctrl, 'c'])
 
-            # with self.kbController_.pressed(kb.Key.ctrl):
-            #   self.kbController_.press('c')
-            self.kbController_.press(kb.Key.ctrl)
-            self.kbController_.press('c')
-            self.kbController_.release('c')
-            self.kbController_.release(kb.Key.ctrl)
+        # sleep here so that os can have time to copy content to the clipboard
+        time.sleep(0.1)
+        content = pyperclip.paste()
+        pyperclip.copy(pre_content)  # recover
+        self.inputText_.delete("1.0", tk.END)
+        self.inputText_.insert(tk.END, content)
 
-            # sleep here so that os can have time to copy content to the clipboard
-            time.sleep(0.1)
-            content = pyperclip.paste()
+        self.DoTrans()
+        # self.trans_lock_.release()
+
+    def SrceenshotTranslate(self):
+        '''
+        print sreen then ocr then translate
+        '''
+        # if self.trans_lock_.acquire(False) == False:
+        #     return
+
+        pre_content = pyperclip.paste()
+        result = PrintSceenToClipboard()
+        if result == 0:
+            self.inputText_.delete("1.0", tk.END)
+            self.outputText_.delete("1.0", tk.END)
+            self.outputText_.insert(tk.END, "[Print screen error]")
+        else:
+            img = ImageGrab.grabclipboard()
+            src_lang_index = self.src_lang_combox_.current()
+            if src_lang_index == len(src_languages) - 1:
+                self.inputText_.delete("1.0", tk.END)
+                self.outputText_.delete("1.0", tk.END)
+                self.outputText_.insert(
+                    tk.END, "[Please choose a specific language for ocr]")
+                return
+            content = pytesseract.image_to_string(
+                image=img, lang=languages_for_tesseract[src_lang_index], config=tessdata_dir_config)
             pyperclip.copy(pre_content)  # recover
             self.inputText_.delete("1.0", tk.END)
             self.inputText_.insert(tk.END, content)
 
             self.DoTrans()
 
-        elif key == kb.Key.f4:  # print sreen then ocr then translate
-            pre_content = pyperclip.paste()
-            result = PrintSceenToClipboard()
-            if result == 0:
-                self.inputText_.delete("1.0", tk.END)
-                self.outputText_.delete("1.0", tk.END)
-                self.outputText_.insert(tk.END, "[Print screen error]")
-            else:
-                img = ImageGrab.grabclipboard()
-                src_lang_index = self.src_lang_combox_.current()
-                if src_lang_index == len(src_languages) - 1:
-                    self.inputText_.delete("1.0", tk.END)
-                    self.outputText_.delete("1.0", tk.END)
-                    self.outputText_.insert(
-                        tk.END, "[Please choose a specific language for ocr]")
-                    return
-                content = pytesseract.image_to_string(
-                    image=img, lang=languages_for_tesseract[src_lang_index], config=tessdata_dir_config)
-                pyperclip.copy(pre_content)  # recover
-                self.inputText_.delete("1.0", tk.END)
-                self.inputText_.insert(tk.END, content)
-
-                self.DoTrans()
+            # self.trans_lock_.release()
 
     def DoTrans(self, event=None):
         content = self.inputText_.get('1.0', tk.END)
@@ -383,8 +382,19 @@ class Gui:
         self.outputText_.delete("1.0", tk.END)
         self.outputText_.insert(tk.END, trans)
 
+    def RegisterTextTranslate(self):
+        self.thread_pool_.submit(self.TextTranslate)
+
+    def RegisterScreenshotTranslate(self):
+        self.thread_pool_.submit(self.SrceenshotTranslate)   
+
+    def RegisterDoTrans(self):
+        self.thread_pool_.submit(self.DoTrans)   
+
+
 def Start():
     gui = Gui()
+
 
 if __name__ == '__main__':
     Start()

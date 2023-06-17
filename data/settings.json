@@ -3,5 +3,7 @@
     "private_key_for_baidu_api": "",
     "appid_for_baidu_api": "",
     "engine": "google",
-    "mode": "dark"
+    "mode": "dark",
+    "text_translate_shortcut_key": "<f2>",
+    "screenshot_translate_shortcut_key": "<f4>"
 }

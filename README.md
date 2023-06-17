@@ -2,10 +2,10 @@
 
 It is an easy-to-use app which can translate selected text without copying manually.
 
-## Maybe coming soon
+## Coming soon
 
-* Chatgpt engine only requiring username and password
 * Chatgpt api engine
+* Translation records
 
 ## Environment
 
@@ -20,8 +20,7 @@ It is an easy-to-use app which can translate selected text without copying manua
 * tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata`)
 
 ```shell
-sudo apt install xclip # xclip
-sudo apt install tesseract-ocr # tesseract ocr engine
+sudo apt install xclip tesseract-ocr
 ```
 
 ### For Windows
@@ -55,7 +54,7 @@ pip install -r requirements_Windows.txt
 
 ## Usage
 
-### Text translation
+### Text translate
 
 Select text, press `F2`, then translation results will be shown.
 
@@ -63,7 +62,7 @@ Or just type sth. into the input textbox, press `Enter`, then translation result
 
 ![example.png](./img/example.png)
 
-### Screenshot translation
+### Screenshot translate
 
 press `F4`, select the screen area, then translation results will be shown. Auto source language is not supported here.
 
@@ -80,14 +79,15 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 ```json
 {
     "request_url_for_baidu_api": "",
-
     "private_key_for_baidu_api": "",
-
     "appid_for_baidu_api": "",
 
     "engine": "google",
 
-    "mode": "dark"
+    "mode": "dark",
+
+    "text_translate_shortcut_key": "<f2>",
+    "screenshot_translate_shortcut_key": "<f4>"
 
 }
 ```
@@ -99,6 +99,8 @@ If it is set as `"baidu_api"`, `"request_url_for_baidu_api"`,   `"private_key_fo
 `"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.**
 
 `"mode"` can be set as `"dark"` or `"light"`.
+
+`"xx_shortcut_key"` specify shortcut key combinations for functions. Key combinations are sequences of key identifiers separated by `"+"`. Key identifiers are either single characters representing a keyboard key, such as `"a"`, or special key names identified by names enclosed by brackets, such as `"<ctrl>"`. **You can set your own shortcut key combinations for convenience.**
 
 ## Language Support
 

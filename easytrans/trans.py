@@ -11,7 +11,7 @@ import tkinter.font as tkfont
 # import httpx
 import time
 import langid
-from pynput.keyboard import Key
+import pynput.keyboard as keyboard
 import re
 from googletrans import Translator  # must be >=4.0.0rc1
 from httpcore import SyncHTTPProxy
@@ -20,6 +20,8 @@ import subprocess
 import pytesseract
 from PIL import ImageGrab
 import concurrent.futures
+import tiktoken
+import openai
 
 from easytrans.data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
 from easytrans.paths import AbsolutePath
@@ -38,6 +40,8 @@ languages_for_tesseract = []
 system_name = platform.system()
 
 tessdata_dir_config = ''
+
+copy_key = []
 
 
 def LoadConfigs():
@@ -60,8 +64,9 @@ def SaveConfigs():
 
 
 def LoadSettings():
-    global settings
+    global settings, copy_key
     settings = LoadData(settings_file)
+    copy_key = keyboard.HotKey.parse(settings['copy_key'])
 
 
 def SaveSettings():
@@ -85,7 +90,7 @@ def PrintSceenToClipboard():
         except subprocess.CalledProcessError:
             return 0
     elif system_name == 'Windows':  # Windows
-        KeyController().Type([Key.shift, Key.cmd, 's'])
+        KeyController().Type([keyboard.Key.shift, keyboard.Key.cmd, 's'])
         return 1
     elif system_name == 'Darwin':  # Macos
         try:
@@ -233,6 +238,65 @@ class GoogleTranslator:
             src_text, src_language=src_lang, dest_language=GoogleTranslator.languages_for_google_[dest_lang_index])
 
 
+class OpenaiAPITranslator:
+
+    def __init__(self, api_key, model='text-davinci-003'):
+        openai.api_key = settings['openai_api_key']
+        self.model_ = model
+
+    def NumTokensFromString(string, model_name='text-davinci-003'):
+        encoding = tiktoken.encoding_for_model(model_name)
+        num_tokens = len(encoding.encode(string))
+        return num_tokens
+
+    def NumTokensFromMessages(messages, model="gpt-3.5-turbo"):
+        """Returns the number of tokens used by a list of messages."""
+        try:
+            encoding = tiktoken.encoding_for_model(model)
+        except KeyError:
+            print("Warning: model not found. Using cl100k_base encoding.")
+            encoding = tiktoken.get_encoding("cl100k_base")
+        if "gpt-3.5-turbo" in model:
+            # every message follows <|start|>{role/name}\n{content}<|end|>\n
+            tokens_per_message = 4
+            tokens_per_name = -1  # if there's a name, the role is omitted
+        elif "gpt-4-0314" in model:
+            tokens_per_message = 3
+            tokens_per_name = 1
+        else:
+            raise NotImplementedError(
+                f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+        num_tokens = 0
+        for message in messages:
+            num_tokens += tokens_per_message
+            for key, value in message.items():
+                num_tokens += len(encoding.encode(value))
+                if key == "name":
+                    num_tokens += tokens_per_name
+        num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
+        return num_tokens
+
+    def Translate(self, src_text, src_language, dest_language):
+        try:
+            prompt = f'Translate this into {dest_language}:\n\n{src_text}'
+            response = openai.Completion.create(
+                model=self.model_,
+                prompt=prompt,
+                temperature=0.3,
+                max_tokens=4097 - OpenaiAPITranslator.NumTokensFromString(prompt, self.model_),
+                # max_tokens=2000,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0
+            )
+            return 1, response['choices'][0]['text'].strip()
+        except Exception as e:
+            return 0, str(e)
+
+    def TranslateWrapper(self, src_text, src_lang_index, dest_lang_index):
+        return self.Translate(src_text, '', languages[dest_lang_index])
+
+
 class Gui:
     def __init__(self):
 
@@ -243,6 +307,8 @@ class Gui:
         elif engine == 'baidu_api':
             self.translator_ = BaiduAPITranslator(
                 settings['appid_for_baidu_api'], settings['private_key_for_baidu_api'])
+        elif engine == 'openai_api':
+            self.translator_ = OpenaiAPITranslator(settings['openai_api_key'])
         else:
             print('Please choose a translation engine')
             exit(0)
@@ -301,8 +367,9 @@ class Gui:
         # self.trans_lock_ = threading.Lock()
 
         # backend thread for time consuming tasks
-        self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-        
+        self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(
+            max_workers=1)
+
         self.window_.mainloop()
 
     def TextTranslate(self):
@@ -313,9 +380,10 @@ class Gui:
 
         # with self.kbController_.pressed(kb.Key.ctrl):
         #   self.kbController_.press('c')
-        self.kbController_.Type([Key.ctrl, 'c'])
 
-        # sleep here so that os can have time to copy content to the clipboard
+        # copy the selected text to clipboard
+        self.kbController_.Type(copy_key)
+        # sleep here to wait content copied to the clipboard
         time.sleep(0.1)
         content = pyperclip.paste()
         pyperclip.copy(pre_content)  # recover
@@ -386,15 +454,11 @@ class Gui:
         self.thread_pool_.submit(self.TextTranslate)
 
     def RegisterScreenshotTranslate(self):
-        self.thread_pool_.submit(self.SrceenshotTranslate)   
+        self.thread_pool_.submit(self.SrceenshotTranslate)
 
     def RegisterDoTrans(self):
-        self.thread_pool_.submit(self.DoTrans)   
+        self.thread_pool_.submit(self.DoTrans)
 
 
 def Start():
     gui = Gui()
-
-
-if __name__ == '__main__':
-    Start()

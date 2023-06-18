@@ -2,8 +2,15 @@
     "request_url_for_baidu_api": "",
     "private_key_for_baidu_api": "",
     "appid_for_baidu_api": "",
+
+    "openai_api_key": "",
+
     "engine": "google",
+
     "mode": "dark",
+
     "text_translate_shortcut_key": "<f2>",
-    "screenshot_translate_shortcut_key": "<f4>"
+    "screenshot_translate_shortcut_key": "<f4>",
+
+    "copy_key": "<ctrl>+c"
 }

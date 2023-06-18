@@ -4,7 +4,6 @@ It is an easy-to-use app which can translate selected text without copying manua
 
 ## Coming soon
 
-* Chatgpt api engine
 * Translation records
 
 ## Environment
@@ -40,16 +39,18 @@ sudo apt install xclip tesseract-ocr
 * winreg **(For Windows)**
 * pytesseract
 * tqdm
+* openai
+* tiktoken
 
 ```shell
 # For linux (Ubuntu)
 sudo apt install python3-tk
-pip install -r requirements_Linux.txt
+pip install -r requirements_Linux.txt --upgrade
 ```
 
 ```powershell
 # For Windows
-pip install -r requirements_Windows.txt
+pip install -r requirements_Windows.txt --upgrade
 ```
 
 ## Usage
@@ -59,6 +60,8 @@ pip install -r requirements_Windows.txt
 Select text, press `F2`, then translation results will be shown.
 
 Or just type sth. into the input textbox, press `Enter`, then translation results will be shown.
+
+(The app uses `ctrl + c` to copy text, so it can be )
 
 ![example.png](./img/example.png)
 
@@ -82,25 +85,33 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
     "private_key_for_baidu_api": "",
     "appid_for_baidu_api": "",
 
+    "openai_api_key": "",
+
     "engine": "google",
 
     "mode": "dark",
 
     "text_translate_shortcut_key": "<f2>",
-    "screenshot_translate_shortcut_key": "<f4>"
+    "screenshot_translate_shortcut_key": "<f4>",
+
+    "copy_key": "<ctrl>+c"
 
 }
 ```
 
-`"engine"` can be set as `"google"` or `"baidu_api"`.
-
-If it is set as `"baidu_api"`, `"request_url_for_baidu_api"`,   `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` is required ( The corresponding website is https://api.fanyi.baidu.com/  ).
+`"engine"` can be set as `"google"`, `"baidu_api"` or `"openai_api"`.
 
 `"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.**
 
+`"baidu_api"` engine requires `"request_url_for_baidu_api"`,   `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` to be set ( The corresponding website is [https://api.fanyi.baidu.com/](https://api.fanyi.baidu.com/)  ).
+
+`"openai_api"` engine requires `"openai_api_key"` to be set. (The corresponding website is [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)) `"openai_api"` engine is **not as fast as other engines**, so please **be patient** when using this engine.
+
 `"mode"` can be set as `"dark"` or `"light"`.
 
-`"xx_shortcut_key"` specify shortcut key combinations for functions. Key combinations are sequences of key identifiers separated by `"+"`. Key identifiers are either single characters representing a keyboard key, such as `"a"`, or special key names identified by names enclosed by brackets, such as `"<ctrl>"`. **You can set your own shortcut key combinations for convenience.**
+`"xx_shortcut_key"` specify shortcut key combinations for some functions. Key combinations are sequences of key identifiers separated by `"+"`. Key identifiers are either single characters representing a keyboard key, such as `"a"`, or special key names identified by names enclosed by brackets, such as `"<ctrl>"`. **You can set your own shortcut key combinations for convenience.**"
+
+`"copy_key"` is used for text translate to copy selected text to this app. The default setting `"<ctrl>+c"` can work for most softwares, except some softwares, e.g. command line programs. If you really want to use this app with specifc softwares, set `"copy_key"` as you want.
 
 ## Language Support
 

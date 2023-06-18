@@ -17,6 +17,3 @@ def LoadData(file_name):
     with open(file_name, 'r') as file:
         return json.load(file)
 
-
-if __name__ == "__main__":
-    pass

@@ -27,8 +27,7 @@ class KeyListener(keyboard.Listener):
 
     def OnPress(self, key):
         # print(f'Press {self.canonical(key)}')
-        if self.canonical(key) in self.pressed_:
-            # print(1)
+        if self.canonical(key) in self.pressed_: # handle the problem that any key controller tries to press the pressed key
             return
         self.pressed_.add(self.canonical(key))
 

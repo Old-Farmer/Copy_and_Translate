@@ -35,5 +35,6 @@
         "jpn",
         "kor"
     ],
-    "tessdata_dir": "data/tessdata"
+    "tessdata_dir": "data/tessdata",
+    "icon": "img/selextrans.png"
 }

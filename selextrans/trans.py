@@ -24,9 +24,9 @@ import concurrent.futures
 import tiktoken
 import openai
 
-from easytrans.data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
-from easytrans.paths import AbsolutePath
-from easytrans.utils import KeyController, KeyListener
+from selextrans.data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
+from selextrans.paths import AbsolutePath
+from selextrans.utils import KeyController, KeyListener
 
 # # const
 # kText = 0
@@ -80,8 +80,7 @@ try:
     LoadSettings()
 except Exception as e:
     messagebox.showerror(str(e))
-    print(str(e))
-    exit(0)
+    raise e
 
 def PrintSceenToClipboard():
     '''
@@ -358,8 +357,9 @@ class Gui:
 
         # init gui
         self.root_ = tk.Tk()
-        self.root_.title('Copy and Translate')
+        self.root_.title('Selextrans')
         self.root_.attributes("-topmost", True)
+        self.root_.iconphoto(True, tk.PhotoImage(file=AbsolutePath(configs['icon'])))
 
         global_font = tkfont.Font(size=15)
         self.root_.option_add('*Font', global_font)
@@ -410,9 +410,8 @@ class Gui:
             self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.RegisterTextTranslate,
                                         settings['screenshot_translate_shortcut_key']: self.RegisterScreenshotTranslate})
         except Exception as e:
-            print(str(e))
             messagebox.showerror(str(e))
-            exit(0)
+            raise e
             
         self.listener_.start()
         # self.listener_.join()

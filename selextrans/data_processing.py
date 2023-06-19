@@ -1,5 +1,5 @@
 import json
-from easytrans.paths import AbsolutePath
+from selextrans.paths import AbsolutePath
 
 configs_file = AbsolutePath('data/configs.json')
 settings_file = AbsolutePath('data/settings.json')

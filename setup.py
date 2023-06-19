@@ -2,8 +2,8 @@ import urllib.request
 import os
 from tqdm import tqdm
 
-from easytrans.data_processing import configs, configs_file, LoadData
-from easytrans.paths import AbsolutePath
+from selextrans.data_processing import configs, configs_file, LoadData
+from selextrans.paths import AbsolutePath
 
 configs = LoadData(configs_file)
 

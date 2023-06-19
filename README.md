@@ -1,4 +1,4 @@
-# Easytrans
+# Selextrans
 
 It is an easy-to-use app which can translate selected text without copying manually.
 

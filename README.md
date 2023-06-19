@@ -57,8 +57,6 @@ Select text, press `F2`, then translation results will be shown.
 
 Or just type sth. into the input textbox, press `Enter`, then translation results will be shown.
 
-(The app uses `ctrl + c` to copy text, so it can be )
-
 ![example.png](./img/example.png)
 
 ### Screenshot translate

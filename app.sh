@@ -1,1 +1,4 @@
-python3 run.py
+#!/bin/bash
+
+SCRIPT_DIR="$(dirname "$0")"
+python3 "$SCRIPT_DIR/run.py"

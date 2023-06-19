@@ -2,10 +2,6 @@
 
 It is an easy-to-use app which can translate selected text without copying manually.
 
-## Coming soon
-
-* Translation records
-
 ## Environment
 
 * python 3.10+. A lower version may be ok.
@@ -61,8 +57,6 @@ Select text, press `F2`, then translation results will be shown.
 
 Or just type sth. into the input textbox, press `Enter`, then translation results will be shown.
 
-(The app uses `ctrl + c` to copy text, so it can be )
-
 ![example.png](./img/example.png)
 
 ### Screenshot translate
@@ -105,7 +99,7 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 `"baidu_api"` engine requires `"request_url_for_baidu_api"`,   `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` to be set ( The corresponding website is [https://api.fanyi.baidu.com/](https://api.fanyi.baidu.com/)  ).
 
-`"openai_api"` engine requires `"openai_api_key"` to be set. (The corresponding website is [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)) `"openai_api"` engine is **not as fast as other engines**, so please **be patient** when using this engine.
+`"openai_api"` engine requires `"openai_api_key"` to be set. (The corresponding website is [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)) `"openai_api"` engine is **not as fast as other engines**, so the app shows translation results **token by token**.
 
 `"mode"` can be set as `"dark"` or `"light"`.
 

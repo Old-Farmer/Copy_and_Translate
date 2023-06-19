@@ -21,7 +21,7 @@ class KeyListener(keyboard.Listener):
         self.pressed_ = set()
         self.keys_to_callback_ = {frozenset([self.canonical(
             key) for key in keyboard.HotKey.parse(k)]): v for k, v in keys_to_callback.items()}
-        print(self.keys_to_callback_)
+        # print(self.keys_to_callback_)
 
         super().__init__(on_press=self.OnPress, on_release=self.OnRelease)
 

@@ -7,6 +7,7 @@ import pyperclip
 import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkfont
+from tkinter import messagebox
 # import asyncio
 # import httpx
 import time
@@ -74,9 +75,13 @@ def SaveSettings():
 
 
 # directly load some data here
-LoadConfigs()
-LoadSettings()
-
+try:
+    LoadConfigs()
+    LoadSettings()
+except Exception as e:
+    messagebox.showerror(str(e))
+    print(str(e))
+    exit(0)
 
 def PrintSceenToClipboard():
     '''
@@ -173,11 +178,13 @@ class BaiduAPITranslator:
             else:
                 return response['error_code'], '[Error: ' + response['error_msg'] + ']'
 
-    def TranslateWrapper(self, src_text, src_lang_index, dest_lang_index):
+    def TranslateWrapper(self, tk_text, src_text, src_lang_index, dest_lang_index):
         src_lang = 'auto' if src_lang_index == len(
             src_languages) - 1 else BaiduAPITranslator.languages_for_baidu_api_[src_lang_index]
-        return self.Translate(
+        _, trans = self.Translate(
             src_text, src_language=src_lang, dest_language=BaiduAPITranslator.languages_for_baidu_api_[dest_lang_index])
+        tk_text.delete("1.0", tk.END)
+        tk_text.insert(tk.END, trans)
 
 
 class GoogleTranslator:
@@ -193,6 +200,8 @@ class GoogleTranslator:
                     # socks scheme is not supported by httpx library, so we just use http_proxy
                     os.environ['all_proxy'] = os.environ['http_proxy']
                 else:
+                    messagebox.showerror(
+                        message='No http_proxy is set, but all_proxy is set')
                     print('No http_proxy is set, but all_proxy is set')
                     exit(0)
             self.google_translator = Translator()
@@ -231,26 +240,30 @@ class GoogleTranslator:
             # raise e
             return 0, '[Error: ' + str(e) + ']'
 
-    def TranslateWrapper(self, src_text, src_lang_index, dest_lang_index):
+    def TranslateWrapper(self, tk_text, src_text, src_lang_index, dest_lang_index):
         src_lang = 'auto' if src_lang_index == len(
             src_languages) - 1 else GoogleTranslator.languages_for_google_[src_lang_index]
-        return self.Translate(
+        _, trans = self.Translate(
             src_text, src_language=src_lang, dest_language=GoogleTranslator.languages_for_google_[dest_lang_index])
+        tk_text.delete("1.0", tk.END)
+        tk_text.insert(tk.END, trans)
 
 
 class OpenaiAPITranslator:
 
-    def __init__(self, api_key, model='text-davinci-003'):
+    def __init__(self, api_key, model='gpt-3.5-turbo', stream=True):
         openai.api_key = settings['openai_api_key']
         self.model_ = model
+        self.stream_ = stream
 
     def NumTokensFromString(string, model_name='text-davinci-003'):
+        '''Not use, just for future'''
         encoding = tiktoken.encoding_for_model(model_name)
         num_tokens = len(encoding.encode(string))
         return num_tokens
 
     def NumTokensFromMessages(messages, model="gpt-3.5-turbo"):
-        """Returns the number of tokens used by a list of messages."""
+        '''Not use, just for future'''
         try:
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
@@ -276,25 +289,54 @@ class OpenaiAPITranslator:
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
         return num_tokens
 
-    def Translate(self, src_text, src_language, dest_language):
+    def TranslateWithCompletion(self, src_text, src_language, dest_language):
+        '''Not use, just for future'''
         try:
             prompt = f'Translate this into {dest_language}:\n\n{src_text}'
             response = openai.Completion.create(
                 model=self.model_,
                 prompt=prompt,
                 temperature=0.3,
-                max_tokens=4097 - OpenaiAPITranslator.NumTokensFromString(prompt, self.model_),
-                # max_tokens=2000,
+                max_tokens=4097 -
+                OpenaiAPITranslator.NumTokensFromString(prompt, self.model_),
                 top_p=1.0,
+
                 frequency_penalty=0.0,
                 presence_penalty=0.0
             )
             return 1, response['choices'][0]['text'].strip()
         except Exception as e:
-            return 0, str(e)
+            return 0, '[Error: ' + str(e) + ']'
 
-    def TranslateWrapper(self, src_text, src_lang_index, dest_lang_index):
-        return self.Translate(src_text, '', languages[dest_lang_index])
+    def TranslateWithChatCompletion(self, src_text, src_language, dest_language):
+        return openai.ChatCompletion.create(
+            model=self.model_,
+            messages=[
+                {'role': 'user', 'content': f'Translate this into {dest_language}:\n\n{src_text}'}
+            ],
+            temperature=0,
+            stream=self.stream_
+        )
+
+    def GetContentWithChatCompletionResponseChunk(chunk):
+        content = chunk['choices'][0]['delta'].get('content')
+        if content:
+            return content.strip()
+        else:
+            return ''
+
+    def TranslateWrapper(self, tk_text, src_text, src_lang_index, dest_lang_index):
+        try:
+            response = self.TranslateWithChatCompletion(src_text, '', languages[dest_lang_index])
+            tk_text.delete('1.0', tk.END)
+            tk_text.insert(tk.END, '[Generating...]\n')
+            for chunck in response:
+                content = OpenaiAPITranslator.GetContentWithChatCompletionResponseChunk(chunck)
+                tk_text.insert(tk.END, content)
+            tk_text.delete('1.0', '2.0') # 
+        except Exception as e:
+            tk_text.delete("1.0", tk.END)
+            tk_text.insert(tk.END, '[Error: ' + str(e) + ']')
 
 
 class Gui:
@@ -310,71 +352,83 @@ class Gui:
         elif engine == 'openai_api':
             self.translator_ = OpenaiAPITranslator(settings['openai_api_key'])
         else:
+            messagebox.showerror(message='Please choose a translation engine')
             print('Please choose a translation engine')
             exit(0)
 
         # init gui
-        self.window_ = tk.Tk()
-        self.window_.title('Copy and Translate')
-        self.window_.attributes("-topmost", True)
+        self.root_ = tk.Tk()
+        self.root_.title('Copy and Translate')
+        self.root_.attributes("-topmost", True)
 
         global_font = tkfont.Font(size=15)
-        self.window_.option_add('*Font', global_font)
+        self.root_.option_add('*Font', global_font)
 
         self.src_lang_combox_ = ttk.Combobox(
-            self.window_, values=src_languages)
-        self.inputText_ = tk.Text(self.window_, height=18, width=30)
+            self.root_, values=src_languages)
+        self.inputText_ = tk.Text(self.root_, height=18, width=30)
+        self.row_frame_ = tk.Frame(
+            self.root_, highlightthickness=0, borderwidth=0)
         self.dest_lang_combox_ = ttk.Combobox(
-            self.window_, values=dest_languages)
+            self.row_frame_, values=dest_languages)
+        # self.record_btn_ = tk.Button(self.row_frame_, text='Record', command=lambda event: 1)
         self.outputText_ = tk.Text(
-            self.window_, height=18, width=30)
+            self.root_, height=18, width=30)
 
         if settings['mode'] == 'dark':
-            self.inputText_.configure(background='#292421', foreground='white')
+            self.inputText_.configure(
+                background='#292421', foreground='white', insertbackground='white')
             self.outputText_.configure(
-                background='#292421', foreground='white')
-            # still have some problem of the TCombobox color
+                background='#292421', foreground='white', insertbackground='white')
+            # self.record_btn_.configure(
+            #     background='#292421', foreground='white', activebackground='white', activeforeground='black')
+            # still have some problems of the TCombobox color
             ttk.Style().configure('TCombobox', fieldbackground='#292421', foreground='white')
-            self.window_.option_add('*TCombobox*Foreground', 'white')
-            self.window_.option_add('*TCombobox*Background', '#292421')
+            self.root_.option_add('*TCombobox*Foreground', 'white')
+            self.root_.option_add('*TCombobox*Background', '#292421')
 
-        self.src_lang_combox_.grid(row=0, column=0, sticky='ew')
+        self.src_lang_combox_.grid(row=0, column=0, sticky=tk.EW)
         self.inputText_.grid(row=1, column=0, sticky=tk.NSEW)
-        self.dest_lang_combox_.grid(row=2, column=0, sticky='ew')
+        self.row_frame_.grid(row=2, column=0, sticky=tk.EW)
+        self.dest_lang_combox_.grid(row=0, column=0, sticky=tk.NSEW)
+        # self.record_btn_.grid(row=0, column=1, sticky=tk.NSEW)
         self.outputText_.grid(row=3, column=0, sticky=tk.NSEW)
 
         # set weight
-        self.window_.columnconfigure(0, weight=1)
-        self.window_.rowconfigure(1, weight=1)
-        self.window_.rowconfigure(3, weight=1)
+        self.root_.columnconfigure(0, weight=1)
+        self.root_.rowconfigure(1, weight=1)
+        self.root_.rowconfigure(3, weight=1)
+        self.row_frame_.rowconfigure(0, weight=1)
+        self.row_frame_.columnconfigure(0, weight=1)
 
         self.src_lang_combox_.current(len(src_languages) - 1)
         self.dest_lang_combox_.current(0)
 
         self.kbController_ = KeyController()
 
-        self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.RegisterTextTranslate,
-                                      settings['screenshot_translate_shortcut_key']: self.RegisterScreenshotTranslate})
+        try: 
+            self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.RegisterTextTranslate,
+                                        settings['screenshot_translate_shortcut_key']: self.RegisterScreenshotTranslate})
+        except Exception as e:
+            print(str(e))
+            messagebox.showerror(str(e))
+            exit(0)
+            
         self.listener_.start()
         # self.listener_.join()
 
-        self.inputText_.bind('<Return>', self.RegisterDoTrans)
         # self.src_lang_combox_.bind(
         #     '<<ComboboxSelected>>', self.HandleSrcLanguageSelect)
         # self.dest_lang_combox_.bind(
         #     '<<ComboboxSelected>>', self.HandleDestLanguageSelect)
 
-        # self.trans_lock_ = threading.Lock()
-
         # backend thread for time consuming tasks
         self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(
             max_workers=1)
 
-        self.window_.mainloop()
+        self.root_.mainloop()
 
     def TextTranslate(self):
-        # if self.trans_lock_.acquire(False) == False:
-        #     return
 
         pre_content = pyperclip.paste()
 
@@ -391,14 +445,11 @@ class Gui:
         self.inputText_.insert(tk.END, content)
 
         self.DoTrans()
-        # self.trans_lock_.release()
 
     def SrceenshotTranslate(self):
         '''
         print sreen then ocr then translate
         '''
-        # if self.trans_lock_.acquire(False) == False:
-        #     return
 
         pre_content = pyperclip.paste()
         result = PrintSceenToClipboard()
@@ -423,9 +474,8 @@ class Gui:
 
             self.DoTrans()
 
-            # self.trans_lock_.release()
-
     def DoTrans(self, event=None):
+
         content = self.inputText_.get('1.0', tk.END)
         # print(content)
         if content == '':
@@ -444,11 +494,8 @@ class Gui:
         src_lang_index = self.src_lang_combox_.current()
         dest_lang_index = self.dest_lang_combox_.current()
 
-        _, trans = self.translator_.TranslateWrapper(
-            content, src_lang_index, dest_lang_index)
-
-        self.outputText_.delete("1.0", tk.END)
-        self.outputText_.insert(tk.END, trans)
+        self.translator_.TranslateWrapper(self.outputText_,
+                                          content, src_lang_index, dest_lang_index)
 
     def RegisterTextTranslate(self):
         self.thread_pool_.submit(self.TextTranslate)

@@ -1,5 +1,7 @@
 # Selextrans
 
+![1687223177668](./image/README/1687223177668.png)
+
 It is an easy-to-use app which can translate selected text without copying manually.
 
 ## Environment
@@ -61,7 +63,7 @@ Or just type sth. into the input textbox, press `Enter`, then translation result
 
 ### Screenshot translate
 
-press `F4`, select the screen area, then translation results will be shown. Auto source language is not supported here.
+Press `F4`, select the screen area, then translation results will be shown. Auto source language is not supported here.
 
 ## Run
 

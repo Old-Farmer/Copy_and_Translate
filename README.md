@@ -1,6 +1,6 @@
 # Selextrans
 
-![1687223177668](./image/README/1687223177668.png)
+![icon](./img/selextrans.png "icon")
 
 It is an easy-to-use app which can translate selected text without copying manually.
 

@@ -82,6 +82,7 @@ except Exception as e:
     messagebox.showerror(str(e))
     raise e
 
+
 def PrintSceenToClipboard():
     '''
     Using tools for printscreen
@@ -98,7 +99,8 @@ def PrintSceenToClipboard():
         return 1
     elif system_name == 'Darwin':  # Macos
         try:
-            subprocess.run(['screencapture', '-i', '-s'], check=True)
+            subprocess.run(['screencapture', '-i', '-s', '-c'],
+                           check=True)  # brew install pngpaste
             return 1
         except subprocess.CalledProcessError:
             return 0
@@ -326,13 +328,15 @@ class OpenaiAPITranslator:
 
     def TranslateWrapper(self, tk_text, src_text, src_lang_index, dest_lang_index):
         try:
-            response = self.TranslateWithChatCompletion(src_text, '', languages[dest_lang_index])
+            response = self.TranslateWithChatCompletion(
+                src_text, '', languages[dest_lang_index])
             tk_text.delete('1.0', tk.END)
             tk_text.insert(tk.END, '[Generating...]\n')
             for chunck in response:
-                content = OpenaiAPITranslator.GetContentWithChatCompletionResponseChunk(chunck)
+                content = OpenaiAPITranslator.GetContentWithChatCompletionResponseChunk(
+                    chunck)
                 tk_text.insert(tk.END, content)
-            tk_text.delete('1.0', '2.0') # 
+            tk_text.delete('1.0', '2.0')
         except Exception as e:
             tk_text.delete("1.0", tk.END)
             tk_text.insert(tk.END, '[Error: ' + str(e) + ']')
@@ -359,7 +363,8 @@ class Gui:
         self.root_ = tk.Tk()
         self.root_.title('Selextrans')
         self.root_.attributes("-topmost", True)
-        self.root_.iconphoto(True, tk.PhotoImage(file=AbsolutePath(configs['icon'])))
+        self.root_.iconphoto(True, tk.PhotoImage(
+            file=AbsolutePath(configs['icon'])))
 
         global_font = tkfont.Font(size=15)
         self.root_.option_add('*Font', global_font)
@@ -382,10 +387,24 @@ class Gui:
                 background='#292421', foreground='white', insertbackground='white')
             # self.record_btn_.configure(
             #     background='#292421', foreground='white', activebackground='white', activeforeground='black')
-            # still have some problems of the TCombobox color
-            ttk.Style().configure('TCombobox', fieldbackground='#292421', foreground='white')
-            self.root_.option_add('*TCombobox*Foreground', 'white')
-            self.root_.option_add('*TCombobox*Background', '#292421')
+
+            # foreground: text, fieldbackground: background area, background: drop-down box, arrowcolor: arrow color
+            # ttk.Style().configure('TCombobox', foreground='white', fieldbackground='#292421', background='#292421', arrowcolor='white') # can work on Linux but not on Windows
+            style = ttk.Style()
+            style.theme_create('combobox_style', settings={
+                'TCombobox': {'configure': {
+                    'foreground': 'white',
+                    'fieldbackground': '#292421',
+                    'background': '#464547',
+                    'arrowcolor': 'white'
+                }
+                }
+            })
+            style.theme_use('combobox_style')
+
+            # for drop-down list
+            self.root_.option_add('*TCombobox*Listbox*Foreground', 'white')
+            self.root_.option_add('*TCombobox*Listbox*Background', '#292421')
 
         self.src_lang_combox_.grid(row=0, column=0, sticky=tk.EW)
         self.inputText_.grid(row=1, column=0, sticky=tk.NSEW)
@@ -406,13 +425,13 @@ class Gui:
 
         self.kbController_ = KeyController()
 
-        try: 
+        try:
             self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.RegisterTextTranslate,
-                                        settings['screenshot_translate_shortcut_key']: self.RegisterScreenshotTranslate})
+                                          settings['screenshot_translate_shortcut_key']: self.RegisterScreenshotTranslate})
         except Exception as e:
             messagebox.showerror(str(e))
             raise e
-            
+
         self.listener_.start()
         # self.listener_.join()
 

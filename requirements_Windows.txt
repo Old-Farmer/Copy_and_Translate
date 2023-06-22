@@ -9,5 +9,4 @@ tqdm
 openai
 tiktoken
 
-tkinter
 winreg

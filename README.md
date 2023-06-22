@@ -25,11 +25,10 @@ sudo apt install xclip tesseract-ocr
 * tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata/`)
   Check the website [Introduction | tessdoc](https://tesseract-ocr.github.io/tessdoc/Installation.html) and install the tesseract. Do not forget to set the **environment variable**.
 
-### Requirements (Python external lib)
+### Requirements
 
 * requests
 * pyperclip
-* tkinter
 * pynput
 * langid
 * googletrans>=4.0.0rc1
@@ -42,7 +41,7 @@ sudo apt install xclip tesseract-ocr
 
 ```shell
 # For linux (Ubuntu)
-sudo apt install python3-tk
+sudo apt install python3-tk # For tkinter
 pip install -r requirements_Linux.txt --upgrade
 ```
 
@@ -105,7 +104,7 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 `"mode"` can be set as `"dark"` or `"light"`.
 
-`"xx_shortcut_key"` specify shortcut key combinations for some functions. Key combinations are sequences of key identifiers separated by `"+"`. Key identifiers are either single characters representing a keyboard key, such as `"a"`, or special key names identified by names enclosed by brackets, such as `"<ctrl>"`. **You can set your own shortcut key combinations for convenience.**"
+`"xx_shortcut_key"` specify shortcut key combinations for some functions. Key combinations are sequences of key identifiers separated by `"+"`. Key identifiers are either single characters representing a keyboard key, such as `"a"`, or special key names identified by names enclosed by brackets, such as `"<ctrl>"`. **You can set your own shortcut key combinations for convenience.**
 
 `"copy_key"` is used for text translate to copy selected text to this app. The default setting `"<ctrl>+c"` can work for most softwares, except some softwares, e.g. command line programs. If you really want to use this app with specifc softwares, set `"copy_key"` as you want.
 

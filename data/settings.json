@@ -12,5 +12,7 @@
     "text_translate_shortcut_key": "<f2>",
     "screenshot_translate_shortcut_key": "<f4>",
 
-    "copy_key": "<ctrl>+c"
+    "copy_key": "<ctrl>+c",
+
+    "tesseract_cmd": "tesseract"
 }

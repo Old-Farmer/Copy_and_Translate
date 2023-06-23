@@ -6,8 +6,8 @@ It is an easy-to-use app which can translate selected text without copying manua
 
 ## Environment
 
-* python 3.10+. A lower version may be ok.
-* **Linux** & **Windows**. **But this app is not fully tested on Windows. So I do not guarantee the correctness of it on Windows.**
+* python 3.6+
+* **Linux** ~~& **Windows**. ~~**~~But this app is not fully tested on Windows. So I do not guarantee the correctness of it on Windows.~~**
 
 ## Depencies
 
@@ -20,10 +20,10 @@ It is an easy-to-use app which can translate selected text without copying manua
 sudo apt install xclip tesseract-ocr
 ```
 
-### For Windows
+### ~~For Windows~~
 
-* tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata/`)
-  Check the website [Introduction | tessdoc](https://tesseract-ocr.github.io/tessdoc/Installation.html) and install the tesseract. Do not forget to set the **environment variable**.
+* ~~tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata/`)
+  Check the website [Introduction | tessdoc](https://tesseract-ocr.github.io/tessdoc/Installation.html) and install the tesseract.~~
 
 ### Requirements
 
@@ -38,6 +38,8 @@ sudo apt install xclip tesseract-ocr
 * tqdm
 * openai
 * tiktoken
+* pyqt5
+* pyautogui
 
 ```shell
 # For linux (Ubuntu)
@@ -46,7 +48,7 @@ pip install -r requirements_Linux.txt --upgrade
 ```
 
 ```powershell
-# For Windows
+# For Windows (not support now)
 pip install -r requirements_Windows.txt --upgrade
 ```
 
@@ -62,7 +64,9 @@ Or just type sth. into the input textbox, press `Enter`, then translation result
 
 ### Screenshot translate
 
-Press `F4`, select the screen area, then translation results will be shown. Auto source language is not supported here.
+Press `F4`, select a screen area, then translation results will be shown. Auto source language is not supported here.
+
+**To select an area**, you need to press the left mouse button, drag the mouse to select the desired area, and finally release the button to complete the selection. You can press the right mouse button or `Esc` to cancel a selection.
 
 ## Run
 
@@ -89,7 +93,9 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
     "text_translate_shortcut_key": "<f2>",
     "screenshot_translate_shortcut_key": "<f4>",
 
-    "copy_key": "<ctrl>+c"
+    "copy_key": "<ctrl>+c",
+
+    "tesseract_cmd": "tesseract"
 
 }
 ```
@@ -107,6 +113,8 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 `"xx_shortcut_key"` specify shortcut key combinations for some functions. Key combinations are sequences of key identifiers separated by `"+"`. Key identifiers are either single characters representing a keyboard key, such as `"a"`, or special key names identified by names enclosed by brackets, such as `"<ctrl>"`. **You can set your own shortcut key combinations for convenience.**
 
 `"copy_key"` is used for text translate to copy selected text to this app. The default setting `"<ctrl>+c"` can work for most softwares, except some softwares, e.g. command line programs. If you really want to use this app with specifc softwares, set `"copy_key"` as you want.
+
+`"tesseract_cmd"` defines the command to start tesseract, which can be the executable file path or just the command `"tesseract"`. ~~For Windows, if you do not set the environment variable for tesseract, set `"tesseract_cmd"` as the executable file `tesseract.exe` path. Use `"/"` as seperators.~~
 
 ## Language Support
 

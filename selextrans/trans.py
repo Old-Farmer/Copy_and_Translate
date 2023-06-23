@@ -19,14 +19,13 @@ from httpcore import SyncHTTPProxy
 from urllib.parse import urlparse
 import subprocess
 import pytesseract
-from PIL import ImageGrab
 import concurrent.futures
 import tiktoken
 import openai
 
 from selextrans.data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
 from selextrans.paths import AbsolutePath
-from selextrans.utils import KeyController, KeyListener
+from selextrans.utils import KeyController, KeyListener, PrintScreen, PrintScreenBeautifully
 
 # # const
 # kText = 0
@@ -55,7 +54,6 @@ def LoadConfigs():
     languages_for_tesseract = configs['languages_for_tesseract']
 
     # customize language data loc
-    # pytesseract.pytesseract.tesseract_cmd = 'tesseract'
     tessdata_dir_config = '--tessdata-dir ' + \
         AbsolutePath(configs['tessdata_dir'])
 
@@ -68,6 +66,7 @@ def LoadSettings():
     global settings, copy_key
     settings = LoadData(settings_file)
     copy_key = keyboard.HotKey.parse(settings['copy_key'])
+    pytesseract.pytesseract.tesseract_cmd = settings['tesseract_cmd']
 
 
 def SaveSettings():
@@ -85,8 +84,7 @@ except Exception as e:
 
 def PrintSceenToClipboard():
     '''
-    Using tools for printscreen
-    Windows & Macos haven't been tested yet
+    Using tools for printscreen, not use now
     '''
     if system_name == 'Linux':  # linux
         try:
@@ -95,8 +93,9 @@ def PrintSceenToClipboard():
         except subprocess.CalledProcessError:
             return 0
     elif system_name == 'Windows':  # Windows
-        KeyController().Type([keyboard.Key.shift, keyboard.Key.cmd, 's'])
-        return 1
+        # KeyController().Type([keyboard.Key.shift, keyboard.Key.cmd, 's']) # bug here
+        # return 1
+        return 0
     elif system_name == 'Darwin':  # Macos
         try:
             subprocess.run(['screencapture', '-i', '-s', '-c'],
@@ -237,6 +236,8 @@ class GoogleTranslator:
             r = self.google_translator.translate(
                 src_text, src=src_language, dest=dest_language)
             return 1, r.text
+        except IndexError: # this error always occurs when input is empty
+            return 0, '[Error: ' + 'Empty input' + ']'
         except Exception as e:
             # raise e
             return 0, '[Error: ' + str(e) + ']'
@@ -426,8 +427,10 @@ class Gui:
         self.kbController_ = KeyController()
 
         try:
-            self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.RegisterTextTranslate,
-                                          settings['screenshot_translate_shortcut_key']: self.RegisterScreenshotTranslate})
+            self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.TextTranslate,
+                                          settings['screenshot_translate_shortcut_key']: self.ReigisterSrceenshotTranslateToMainLoop})
+            # self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.TextTranslate,
+            #                               settings['screenshot_translate_shortcut_key']: self.SrceenshotTranslate})
         except Exception as e:
             messagebox.showerror(str(e))
             raise e
@@ -462,35 +465,34 @@ class Gui:
         self.inputText_.delete("1.0", tk.END)
         self.inputText_.insert(tk.END, content)
 
-        self.DoTrans()
+        self.RegisterDoTrans()
 
     def SrceenshotTranslate(self):
         '''
         print sreen then ocr then translate
         '''
-
-        pre_content = pyperclip.paste()
-        result = PrintSceenToClipboard()
-        if result == 0:
+        src_lang_index = self.src_lang_combox_.current()
+        if src_lang_index == len(src_languages) - 1:
             self.inputText_.delete("1.0", tk.END)
             self.outputText_.delete("1.0", tk.END)
-            self.outputText_.insert(tk.END, "[Print screen error]")
-        else:
-            img = ImageGrab.grabclipboard()
-            src_lang_index = self.src_lang_combox_.current()
-            if src_lang_index == len(src_languages) - 1:
-                self.inputText_.delete("1.0", tk.END)
-                self.outputText_.delete("1.0", tk.END)
-                self.outputText_.insert(
-                    tk.END, "[Please choose a specific language for ocr]")
-                return
-            content = pytesseract.image_to_string(
-                image=img, lang=languages_for_tesseract[src_lang_index], config=tessdata_dir_config)
-            pyperclip.copy(pre_content)  # recover
-            self.inputText_.delete("1.0", tk.END)
-            self.inputText_.insert(tk.END, content)
+            self.outputText_.insert(
+                tk.END, "[Please choose a specific language for ocr]")
+            return
+        img = PrintScreenBeautifully()
+        if not img:
+            return
+        content = pytesseract.image_to_string(
+            image=img, lang=languages_for_tesseract[src_lang_index], config=tessdata_dir_config)
+        self.inputText_.delete("1.0", tk.END)
+        self.inputText_.insert(tk.END, content)
 
-            self.DoTrans()
+        self.RegisterDoTrans()
+
+    def ReigisterSrceenshotTranslateToMainLoop(self):
+        '''
+        PrintScreenBeautifully() use pyqt5, pyqt5 requires QApplication to be created  at main thread
+        '''
+        self.root_.after(0, self.SrceenshotTranslate)
 
     def DoTrans(self, event=None):
 
@@ -515,15 +517,15 @@ class Gui:
         self.translator_.TranslateWrapper(self.outputText_,
                                           content, src_lang_index, dest_lang_index)
 
-    def RegisterTextTranslate(self):
-        self.thread_pool_.submit(self.TextTranslate)
+    # def RegisterTextTranslate(self):
+    #     self.thread_pool_.submit(self.TextTranslate)
 
-    def RegisterScreenshotTranslate(self):
-        self.thread_pool_.submit(self.SrceenshotTranslate)
+    # def RegisterScreenshotTranslate(self):
+    #     self.thread_pool_.submit(self.SrceenshotTranslate)
 
     def RegisterDoTrans(self):
         self.thread_pool_.submit(self.DoTrans)
 
 
 def Start():
-    gui = Gui()
+    Gui()

@@ -438,14 +438,12 @@ class Gui:
         self.listener_.start()
         # self.listener_.join()
 
-        # self.src_lang_combox_.bind(
-        #     '<<ComboboxSelected>>', self.HandleSrcLanguageSelect)
-        # self.dest_lang_combox_.bind(
-        #     '<<ComboboxSelected>>', self.HandleDestLanguageSelect)
-
-        # backend thread for time consuming tasks
+        # backend threads for time consuming tasks and some ui updations
+        # as tkinter is threadsafe, we simply do some ui updations in the backend threads for convience
         self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(
             max_workers=1)
+
+        self.inputText_.bind('<Return>', lambda event: self.thread_pool_.submit(self.DoTrans, True))
 
         self.root_.mainloop()
 
@@ -462,10 +460,8 @@ class Gui:
         time.sleep(0.1)
         content = pyperclip.paste()
         pyperclip.copy(pre_content)  # recover
-        self.inputText_.delete("1.0", tk.END)
-        self.inputText_.insert(tk.END, content)
 
-        self.RegisterDoTrans()
+        self.RegisterDoTrans(content=content)
 
     def SrceenshotTranslate(self):
         '''
@@ -483,10 +479,8 @@ class Gui:
             return
         content = pytesseract.image_to_string(
             image=img, lang=languages_for_tesseract[src_lang_index], config=tessdata_dir_config)
-        self.inputText_.delete("1.0", tk.END)
-        self.inputText_.insert(tk.END, content)
 
-        self.RegisterDoTrans()
+        self.RegisterDoTrans(content=content)
 
     def ReigisterSrceenshotTranslateToMainLoop(self):
         '''
@@ -494,12 +488,11 @@ class Gui:
         '''
         self.root_.after(0, self.SrceenshotTranslate)
 
-    def DoTrans(self, event=None):
+    def DoTrans(self, content_from_input_text=False, content=''):
 
-        content = self.inputText_.get('1.0', tk.END)
-        # print(content)
-        if content == '':
-            return
+        if content_from_input_text:
+            content = self.inputText_.get('1.0', tk.END)
+            # print(content)
 
         # trans = BaiduTranslate(content.replace('\n', '\\n'), 'en')[1].replace('\\', '\n') # baidu api has some problems with '\n'
 
@@ -523,8 +516,8 @@ class Gui:
     # def RegisterScreenshotTranslate(self):
     #     self.thread_pool_.submit(self.SrceenshotTranslate)
 
-    def RegisterDoTrans(self):
-        self.thread_pool_.submit(self.DoTrans)
+    def RegisterDoTrans(self, content_from_input_text=False, content=''):
+        self.thread_pool_.submit(self.DoTrans, content_from_input_text, content)
 
 
 def Start():

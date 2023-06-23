@@ -7,7 +7,7 @@ It is an easy-to-use app which can translate selected text without copying manua
 ## Environment
 
 * python 3.6+
-* **Linux** ~~& **Windows**. ~~**~~But this app is not fully tested on Windows. So I do not guarantee the correctness of it on Windows.~~**
+* **Linux** & ~~**Windows**. ~~
 
 ## Depencies
 
@@ -33,7 +33,7 @@ sudo apt install xclip tesseract-ocr
 * langid
 * googletrans>=4.0.0rc1
 * httpcore
-* winreg **(For Windows)**
+* ~~winreg **(For Windows)**~~
 * pytesseract
 * tqdm
 * openai
@@ -48,7 +48,7 @@ pip install -r requirements_Linux.txt --upgrade
 ```
 
 ```powershell
-# For Windows (not support now)
+# For Windows (not support yet)
 pip install -r requirements_Windows.txt --upgrade
 ```
 

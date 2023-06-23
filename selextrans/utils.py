@@ -135,6 +135,7 @@ def PrintScreen(area=True):
 def PrintScreenBeautifully(area=True):
     '''
     use pyqt5, return PIL.Image.Image
+    only can be called in the main thread
     '''
     class ScreenPrinter(QWidget):
 

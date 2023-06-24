@@ -112,12 +112,13 @@ def ProcessText(text):
     Mostly for PDF; Process copied text and image ocr results
     '''
     def Replace(match):
-        match_str = match.group(0)
+        match_str = match.group()
         if match_str[0] == '—':
             return ''
         else:
             return ' '
 
+    text = text.strip()
     lang, _ = langid.classify(text)
     if lang in ['zh', 'ja']:  # Chinese, Japanese... do not need spaces to sep words
         # simply ignore '\r' '\n' '\f'

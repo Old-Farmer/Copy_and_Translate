@@ -7,11 +7,22 @@ It is an easy-to-use app which can translate selected text without copying manua
 ## Environment
 
 * python 3.6+
-* **Linux** & **~~Windows~~**
+* **Linux (Ubuntu)** & **~~Windows~~** . If you use other Linux distrubutions, I suggest you to checkout the Depencies carfully. The latter part of the document will only explain the use of `apt` for dependency configuration.
+
+## Quick Start
+
+If you use Linux, We have a **quick start.** Run the following script, then you can jump to **Usage**.
+
+```shell
+git clone https://github.com/Old-Farmer/Selextrans.git
+cd Selextrans
+./setup.sh # Set up before first running the app
+./app.sh # run the app
+```
 
 ## Depencies
 
-### For Linux (Ubuntu)
+### For Linux
 
 * xclip
 * tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata`)
@@ -33,6 +44,7 @@ sudo apt install xclip tesseract-ocr
 * langid
 * googletrans>=4.0.0rc1
 * httpcore
+* tkinter
 * ~~winreg **(For Windows)**~~
 * pytesseract
 * tqdm
@@ -42,7 +54,7 @@ sudo apt install xclip tesseract-ocr
 * pyautogui
 
 ```shell
-# For linux (Ubuntu)
+# For linux
 sudo apt install python3-tk # For tkinter
 pip install -r requirements_Linux.txt --upgrade
 ```
@@ -68,7 +80,7 @@ Press `F4`, select a screen area, then translation results will be shown. Auto s
 
 **To select an area**, you need to press the left mouse button, drag the mouse to select the desired area, and finally release the button to complete the selection. You can press the right mouse button or `Esc` to cancel a selection.
 
-## Run
+## Run and Setup
 
 Directly run the `run.py`.
 

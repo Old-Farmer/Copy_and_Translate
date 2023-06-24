@@ -7,11 +7,11 @@ It is an easy-to-use app which can translate selected text without copying manua
 ## Environment
 
 * python 3.6+
-* **Linux (Ubuntu)** & **~~Windows~~** . If you use other Linux distrubutions, I suggest you to checkout the Depencies carfully. The latter part of the document will only explain the use of `apt` for dependency configuration.
+* **Linux (Ubuntu)** & **~~Windows~~** . If you use other Linux distributions, I suggest you to checkout the Dependencies carfully. The latter part of the document will only explain the use of `apt` for dependency configuration.
 
 ## Quick Start
 
-If you use Linux, We have a **quick start.** Run the following script, then you can jump to **Usage**.
+If you use Linux, We have a **quick start.** Run the following script, then you can skip **Dependencies**.
 
 ```shell
 git clone https://github.com/Old-Farmer/Selextrans.git

@@ -1,3 +1,4 @@
+print('Initializing...', end='')
 import os
 import platform
 import hashlib
@@ -12,6 +13,7 @@ from tkinter import messagebox
 # import httpx
 import time
 import langid
+langid.classify('') # The first call is always slow Because langid should do some init, So we call it here
 import pynput.keyboard as keyboard
 import re
 from googletrans import Translator  # must be >=4.0.0rc1
@@ -25,7 +27,7 @@ import openai
 
 from selextrans.data_processing import DumpData, LoadData, configs, configs_file, settings, settings_file
 from selextrans.paths import AbsolutePath
-from selextrans.utils import KeyController, KeyListener, PrintScreen, PrintScreenBeautifully
+from selextrans.utils import KeyController, KeyListener, PrintScreenBeautifully
 
 # # const
 # kText = 0
@@ -184,7 +186,7 @@ class BaiduAPITranslator:
             src_languages) - 1 else BaiduAPITranslator.languages_for_baidu_api_[src_lang_index]
         _, trans = self.Translate(
             src_text, src_language=src_lang, dest_language=BaiduAPITranslator.languages_for_baidu_api_[dest_lang_index])
-        tk_text.delete("1.0", tk.END)
+        tk_text.delete('1.0', tk.END)
         tk_text.insert(tk.END, trans)
 
 
@@ -248,7 +250,7 @@ class GoogleTranslator:
             src_languages) - 1 else GoogleTranslator.languages_for_google_[src_lang_index]
         _, trans = self.Translate(
             src_text, src_language=src_lang, dest_language=GoogleTranslator.languages_for_google_[dest_lang_index])
-        tk_text.delete("1.0", tk.END)
+        tk_text.delete('1.0', tk.END)
         tk_text.insert(tk.END, trans)
 
 
@@ -265,29 +267,29 @@ class OpenaiAPITranslator:
         num_tokens = len(encoding.encode(string))
         return num_tokens
 
-    def NumTokensFromMessages(messages, model="gpt-3.5-turbo"):
+    def NumTokensFromMessages(messages, model='gpt-3.5-turbo'):
         '''Not use, just for future'''
         try:
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
-            print("Warning: model not found. Using cl100k_base encoding.")
-            encoding = tiktoken.get_encoding("cl100k_base")
-        if "gpt-3.5-turbo" in model:
+            print('Warning: model not found. Using cl100k_base encoding.')
+            encoding = tiktoken.get_encoding('cl100k_base')
+        if 'gpt-3.5-turbo' in model:
             # every message follows <|start|>{role/name}\n{content}<|end|>\n
             tokens_per_message = 4
             tokens_per_name = -1  # if there's a name, the role is omitted
-        elif "gpt-4-0314" in model:
+        elif 'gpt-4-0314' in model:
             tokens_per_message = 3
             tokens_per_name = 1
         else:
             raise NotImplementedError(
-                f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+                f'''num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.''')
         num_tokens = 0
         for message in messages:
             num_tokens += tokens_per_message
             for key, value in message.items():
                 num_tokens += len(encoding.encode(value))
-                if key == "name":
+                if key == 'name':
                     num_tokens += tokens_per_name
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
         return num_tokens
@@ -340,7 +342,7 @@ class OpenaiAPITranslator:
                 tk_text.insert(tk.END, content)
             tk_text.delete('1.0', '2.0')
         except Exception as e:
-            tk_text.delete("1.0", tk.END)
+            tk_text.delete('1.0', tk.END)
             tk_text.insert(tk.END, '[Error: ' + str(e) + ']')
 
 
@@ -364,7 +366,7 @@ class Gui:
         # init gui
         self.root_ = tk.Tk()
         self.root_.title('Selextrans')
-        self.root_.attributes("-topmost", True)
+        self.root_.attributes('-topmost', True)
         self.root_.iconphoto(True, tk.PhotoImage(
             file=AbsolutePath(configs['icon'])))
 
@@ -446,6 +448,7 @@ class Gui:
 
         self.inputText_.bind('<Return>', lambda event: self.thread_pool_.submit(self.DoTrans, True))
 
+        print('Completed')
         self.root_.mainloop()
 
     def TextTranslate(self):
@@ -470,10 +473,10 @@ class Gui:
         '''
         src_lang_index = self.src_lang_combox_.current()
         if src_lang_index == len(src_languages) - 1:
-            self.inputText_.delete("1.0", tk.END)
-            self.outputText_.delete("1.0", tk.END)
+            self.inputText_.delete('1.0', tk.END)
+            self.outputText_.delete('1.0', tk.END)
             self.outputText_.insert(
-                tk.END, "[Please choose a specific language for ocr]")
+                tk.END, '[Please choose a specific language for ocr]')
             return
         img = PrintScreenBeautifully()
         if not img:
@@ -499,11 +502,11 @@ class Gui:
 
         content = ProcessText(content)
         # print(content)
-        self.inputText_.delete("1.0", tk.END)
+        self.inputText_.delete('1.0', tk.END)
         self.inputText_.insert(tk.END, content)
 
-        self.outputText_.delete("1.0", tk.END)
-        self.outputText_.insert(tk.END, "[Waiting for response...]")
+        self.outputText_.delete('1.0', tk.END)
+        self.outputText_.insert(tk.END, '[Waiting for response...]')
 
         src_lang_index = self.src_lang_combox_.current()
         dest_lang_index = self.dest_lang_combox_.current()

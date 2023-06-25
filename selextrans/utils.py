@@ -159,8 +159,10 @@ def PrintScreenBeautifully(area=True):
             self.img_ = None
             self.is_pressing_left_button_ = False
 
-            self.showFullScreen() # fullscreen, or the mask may not be cover fullscreen (esp. tkinter windows) (don't know reason)
-            self.setWindowState(self.windowState() & ~Qt.WindowFullScreen) # show the taskbar
+            # fullscreen, or the mask may not be cover fullscreen (esp. tkinter windows) (don't know reason)
+            self.showFullScreen()
+            self.setWindowState(self.windowState() & ~
+                                Qt.WindowFullScreen)  # show the taskbar
             self.app_.exec_()
 
         def paintEvent(self, event):

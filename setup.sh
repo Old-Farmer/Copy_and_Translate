@@ -3,7 +3,8 @@
 
 SCRIPT_DIR="$(dirname "$0")"
 
-sudo apt install python3-tk # For tkinter
+sudo apt update
+sudo apt install xclip tesseract-ocr python3 python3-tk
 pip install -r "$SCRIPT_DIR/requirements_Linux.txt" --upgrade
 
 python3 "$SCRIPT_DIR/setup.py"

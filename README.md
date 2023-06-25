@@ -4,14 +4,19 @@
 
 It is an easy-to-use app which can translate selected text without copying manually.
 
-## Environment
+## Python
 
-* python 3.6+
-* **Linux (Ubuntu)** & **~~Windows~~** . If you use other Linux distributions, I suggest you to checkout the Dependencies carfully. The latter part of the document will only explain the use of `apt` for dependency configuration.
+This app is developed with **Python 3.10**.
+
+## Platform Support
+
+* **Linux (Debian/Ubuntu)** 
+  If you use other Linux distributions, I suggest you to checkout the Dependencies carfully. The latter part of the document will only explain the use of `apt` for dependency configuration.
+* **Windows**
 
 ## Quick Start
 
-If you use Linux, We have a **quick start.** Run the following script, then you can skip **Dependencies**.
+Here is a **quick start** for Linux usres who only use `pip` and `apt` to configure env. Run the following script, then you can jump to **How to Use**.
 
 ```shell
 git clone https://github.com/Old-Farmer/Selextrans.git
@@ -22,21 +27,21 @@ cd Selextrans
 
 ## Depencies
 
-### For Linux
+### Linux
 
 * xclip
-* tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata`)
+* tesseract ocr engine (**no data file need to be downloaded**)
 
 ```shell
 sudo apt install xclip tesseract-ocr
 ```
 
-### ~~For Windows~~
+### Windows
 
-* ~~tesseract ocr engine (**no data file need to be downloaded**. They are all in `data/tessdata/`)
-  Check the website [Introduction | tessdoc](https://tesseract-ocr.github.io/tessdoc/Installation.html) and install the tesseract.~~
+* tesseract ocr engine (**no data file need to be downloaded**)
+  Check the website [Home · UB-Mannheim/tesseract Wiki · GitHub](https://github.com/UB-Mannheim/tesseract/wiki) and install Tesseract. Just Install it in the **default configure**, and choose a path to install it. Do not forget to set `"tesseract_cmd"` in `data/settings.json` which will be explained in **Settings** with details.
 
-### Requirements
+### Requirements for Python packages
 
 * requests
 * pyperclip
@@ -45,7 +50,7 @@ sudo apt install xclip tesseract-ocr
 * googletrans>=4.0.0rc1
 * httpcore
 * tkinter
-* ~~winreg **(For Windows)**~~
+* winreg **(For Windows)**
 * pytesseract
 * tqdm
 * openai
@@ -64,7 +69,7 @@ pip install -r requirements_Linux.txt --upgrade
 pip install -r requirements_Windows.txt --upgrade
 ```
 
-## Usage
+## How to Use
 
 ### Text translate
 
@@ -92,7 +97,7 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 ```json
 {
-    "request_url_for_baidu_api": "",
+    "request_url_for_baidu_api": "https://fanyi-api.baidu.com/api/trans/vip/translate",
     "private_key_for_baidu_api": "",
     "appid_for_baidu_api": "",
 
@@ -116,7 +121,7 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 `"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.**
 
-`"baidu_api"` engine requires `"request_url_for_baidu_api"`,   `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` to be set ( The corresponding website is [https://api.fanyi.baidu.com/](https://api.fanyi.baidu.com/)  ).
+`"baidu_api"` engine uses 百度通用文本翻译API (Baidu General Text Translation API), and requires `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` to be set ( The corresponding website is [百度翻译开放平台](https://api.fanyi.baidu.com/doc/21)  ).
 
 `"openai_api"` engine requires `"openai_api_key"` to be set. (The corresponding website is [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)) `"openai_api"` engine is **not as fast as other engines**, so the app shows translation results **token by token**.
 
@@ -126,7 +131,7 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 `"copy_key"` is used for text translate to copy selected text to this app. The default setting `"<ctrl>+c"` can work for most softwares, except some softwares, e.g. command line programs. If you really want to use this app with specifc softwares, set `"copy_key"` as you want.
 
-`"tesseract_cmd"` defines the command to start tesseract, which can be the executable file path or just the command `"tesseract"`. ~~For Windows, if you do not set the environment variable for tesseract, set `"tesseract_cmd"` as the executable file `tesseract.exe` path. Use `"/"` as seperators.~~
+`"tesseract_cmd"` defines the command to start tesseract, which can be the executable file path or just the command `"tesseract"`. For Windows, if you do not set the environment variable for tesseract, set `"tesseract_cmd"` as the executable file `tesseract.exe` path. Use `/` or `\\` as seperators.
 
 ## Language Support
 

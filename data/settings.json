@@ -1,5 +1,5 @@
 {
-    "request_url_for_baidu_api": "",
+    "request_url_for_baidu_api": "https://fanyi-api.baidu.com/api/trans/vip/translate",
     "private_key_for_baidu_api": "",
     "appid_for_baidu_api": "",
 

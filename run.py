@@ -1,3 +1,6 @@
 if __name__ == '__main__':
-    from selextrans.trans import Start
-    Start()
+    print('Initializing...', end='', flush=True)
+    from selextrans.trans import Gui
+    gui = Gui()
+    print('Completed')
+    gui.Loop()

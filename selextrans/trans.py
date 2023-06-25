@@ -1,4 +1,3 @@
-print('Initializing...', end='')
 import os
 import platform
 import hashlib
@@ -9,11 +8,8 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkfont
 from tkinter import messagebox
-# import asyncio
-# import httpx
 import time
 import langid
-langid.classify('') # The first call is always slow Because langid should do some init, So we call it here
 import pynput.keyboard as keyboard
 import re
 from googletrans import Translator  # must be >=4.0.0rc1
@@ -75,12 +71,14 @@ def SaveSettings():
     DumpData(settings_file, settings)
 
 
-# directly load some data here
+# directly do some data here
 try:
     LoadConfigs()
     LoadSettings()
+    # The first call is always slow Because langid should do some init, So we call it here
+    langid.classify('')
 except Exception as e:
-    messagebox.showerror(str(e))
+    messagebox.showerror(message=str(e))
     raise e
 
 
@@ -179,7 +177,7 @@ class BaiduAPITranslator:
                 # return 1, 'src: ' + result[0]['src'] + '\n' + 'translation: '+ result[0]['dst']
                 return 1, result[0]['dst']
             else:
-                return response['error_code'], '[Error: ' + response['error_msg'] + ']'
+                return response['error_code'], f"[Error: {response['error_msg']}]"
 
     def TranslateWrapper(self, tk_text, src_text, src_lang_index, dest_lang_index):
         src_lang = 'auto' if src_lang_index == len(
@@ -206,6 +204,7 @@ class GoogleTranslator:
                     messagebox.showerror(
                         message='No http_proxy is set, but all_proxy is set')
                     print('No http_proxy is set, but all_proxy is set')
+                    time.sleep(1)
                     exit(0)
             self.google_translator = Translator()
         elif system_name == 'Windows':  # windows
@@ -239,11 +238,11 @@ class GoogleTranslator:
             r = self.google_translator.translate(
                 src_text, src=src_language, dest=dest_language)
             return 1, r.text
-        except IndexError: # this error always occurs when input is empty
-            return 0, '[Error: ' + 'Empty input' + ']'
+        except IndexError:  # this error always occurs when input is empty
+            return 0, '[Error: Empty input]'
         except Exception as e:
             # raise e
-            return 0, '[Error: ' + str(e) + ']'
+            return 0, f'[Error: {e}]'
 
     def TranslateWrapper(self, tk_text, src_text, src_lang_index, dest_lang_index):
         src_lang = 'auto' if src_lang_index == len(
@@ -311,7 +310,7 @@ class OpenaiAPITranslator:
             )
             return 1, response['choices'][0]['text'].strip()
         except Exception as e:
-            return 0, '[Error: ' + str(e) + ']'
+            return 0, f'[Error: {e}]'
 
     def TranslateWithChatCompletion(self, src_text, src_language, dest_language):
         return openai.ChatCompletion.create(
@@ -334,16 +333,20 @@ class OpenaiAPITranslator:
         try:
             response = self.TranslateWithChatCompletion(
                 src_text, '', languages[dest_lang_index])
-            tk_text.delete('1.0', tk.END)
-            tk_text.insert(tk.END, '[Generating...]\n')
-            for chunck in response:
-                content = OpenaiAPITranslator.GetContentWithChatCompletionResponseChunk(
-                    chunck)
-                tk_text.insert(tk.END, content)
-            tk_text.delete('1.0', '2.0')
+            if self.stream_:
+                tk_text.delete('1.0', tk.END)
+                tk_text.insert(tk.END, '[Generating...]\n')
+                for chunck in response:
+                    content = OpenaiAPITranslator.GetContentWithChatCompletionResponseChunk(
+                        chunck)
+                    tk_text.insert(tk.END, content)
+                tk_text.delete('1.0', '2.0')
+            else:
+                tk_text.delete('1.0', tk.END)
+                tk_text.insert(tk.END, response['choices'][0]['message']['content']) 
         except Exception as e:
             tk_text.delete('1.0', tk.END)
-            tk_text.insert(tk.END, '[Error: ' + str(e) + ']')
+            tk_text.insert(tk.END, f'[Error: {e}]')
 
 
 class Gui:
@@ -358,6 +361,7 @@ class Gui:
                 settings['appid_for_baidu_api'], settings['private_key_for_baidu_api'])
         elif engine == 'openai_api':
             self.translator_ = OpenaiAPITranslator(settings['openai_api_key'])
+            # self.translator_ = OpenaiAPITranslator(settings['openai_api_key'], stream=False)
         else:
             messagebox.showerror(message='Please choose a translation engine')
             print('Please choose a translation engine')
@@ -435,7 +439,7 @@ class Gui:
             # self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.TextTranslate,
             #                               settings['screenshot_translate_shortcut_key']: self.SrceenshotTranslate})
         except Exception as e:
-            messagebox.showerror(str(e))
+            messagebox.showerror(message=str(e))
             raise e
 
         self.listener_.start()
@@ -446,9 +450,10 @@ class Gui:
         self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(
             max_workers=1)
 
-        self.inputText_.bind('<Return>', lambda event: self.thread_pool_.submit(self.DoTrans, True))
+        self.inputText_.bind(
+            '<Return>', lambda event: self.thread_pool_.submit(self.DoTrans, True))
 
-        print('Completed')
+    def Loop(self):
         self.root_.mainloop()
 
     def TextTranslate(self):
@@ -481,8 +486,16 @@ class Gui:
         img = PrintScreenBeautifully()
         if not img:
             return
-        content = pytesseract.image_to_string(
-            image=img, lang=languages_for_tesseract[src_lang_index], config=tessdata_dir_config)
+        try:
+            content = pytesseract.image_to_string(
+                image=img, lang=languages_for_tesseract[src_lang_index], config=tessdata_dir_config)
+        except Exception as e:
+            self.inputText_.delete('1.0', tk.END)
+            self.outputText_.delete('1.0', tk.END)
+            self.outputText_.insert(
+                tk.END, f'[Error: {e}]')
+            print(e)
+            return
 
         self.RegisterDoTrans(content=content)
 
@@ -521,8 +534,5 @@ class Gui:
     #     self.thread_pool_.submit(self.SrceenshotTranslate)
 
     def RegisterDoTrans(self, content_from_input_text=False, content=''):
-        self.thread_pool_.submit(self.DoTrans, content_from_input_text, content)
-
-
-def Start():
-    Gui()
+        self.thread_pool_.submit(
+            self.DoTrans, content_from_input_text, content)

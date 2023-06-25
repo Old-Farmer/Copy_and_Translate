@@ -10,8 +10,7 @@ This app is developed with **Python 3.10**.
 
 ## Platform Support
 
-* **Linux (Debian/Ubuntu)** 
-  If you use other Linux distributions, I suggest you to checkout the Dependencies carfully. The latter part of the document will only explain the use of `apt` for dependency configuration.
+* **Linux (Debian/Ubuntu)**. If you use other Linux distributions, I suggest you to checkout the Dependencies carfully. The latter part of the document will only explain the use of `apt` for dependency configuration.
 * **Windows**
 
 ## Quick Start
@@ -38,8 +37,7 @@ sudo apt install xclip tesseract-ocr
 
 ### Windows
 
-* tesseract ocr engine (**no data file need to be downloaded**)
-  Check the website [Home · UB-Mannheim/tesseract Wiki · GitHub](https://github.com/UB-Mannheim/tesseract/wiki) and install Tesseract. Just Install it in the **default configure**, and choose a path to install it. Do not forget to set `"tesseract_cmd"` in `data/settings.json` which will be explained in **Settings** with details.
+* tesseract ocr engine (**no data file need to be downloaded**). Check the website [Home · UB-Mannheim/tesseract Wiki · GitHub](https://github.com/UB-Mannheim/tesseract/wiki) and install Tesseract. Just Install it in the **default configure**, and choose a path to install it. Do not forget to set `"tesseract_cmd"` in `data/settings.json` which will be explained in **Settings** with details.
 
 ### Requirements for Python packages
 

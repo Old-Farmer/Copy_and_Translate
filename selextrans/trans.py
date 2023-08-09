@@ -32,6 +32,9 @@ from selextrans.data_processing import (
 from selextrans.paths import AbsolutePath
 from selextrans.utils import KeyController, KeyListener, PrintScreenBeautifully
 
+# The first call is always slow Because langid should do some init, So we call it here
+langid.classify("")
+
 # # const
 # kText = 0
 # kImage = 1
@@ -75,17 +78,6 @@ def LoadSettings():
 
 def SaveSettings():
     DumpData(settings_file, settings)
-
-
-# directly do some data here
-try:
-    LoadConfigs()
-    LoadSettings()
-    # The first call is always slow Because langid should do some init, So we call it here
-    langid.classify("")
-except Exception as e:
-    messagebox.showerror(message=str(e))
-    raise e
 
 
 def PrintSceenToClipboard():
@@ -137,12 +129,11 @@ def ProcessText(text):
 
 
 class BaiduAPITranslator:
-    request_url_ = settings["request_url_for_baidu_api"]
-    languages_for_baidu_api_ = configs["languages_for_baidu_api"]
-
-    def __init__(self, appid, private_key):
-        self.appid_ = appid
-        self.private_key_ = private_key
+    def __init__(self):
+        self.appid_ = settings["appid_for_baidu_api"]
+        self.private_key_ = settings["private_key_for_baidu_api"]
+        self.request_url_ = settings["request_url_for_baidu_api"]
+        self.languages_for_baidu_api_ = configs["languages_for_baidu_api"]
 
     def Translate(self, src_text, src_language="auto", dest_language="en"):
         def Md5Encrypt(input_string):
@@ -174,7 +165,7 @@ class BaiduAPITranslator:
         # async with httpx.AsyncClient() as client:
         #   r = await client.get(request_url_, params=params)
 
-        r = requests.get(BaiduAPITranslator.request_url_, params=params)
+        r = requests.get(self.request_url_, params=params)
 
         if r.status_code != 200:
             return 0, "Error happend, try again!"
@@ -191,12 +182,12 @@ class BaiduAPITranslator:
         src_lang = (
             "auto"
             if src_lang_index == len(src_languages) - 1
-            else BaiduAPITranslator.languages_for_baidu_api_[src_lang_index]
+            else self.languages_for_baidu_api_[src_lang_index]
         )
         _, trans = self.Translate(
             src_text,
             src_language=src_lang,
-            dest_language=BaiduAPITranslator.languages_for_baidu_api_[dest_lang_index],
+            dest_language=self.languages_for_baidu_api_[dest_lang_index],
         )
         tk_text.delete("1.0", tk.END)
         tk_text.insert(tk.END, trans)
@@ -205,9 +196,9 @@ class BaiduAPITranslator:
 class GoogleTranslator:
     """ """
 
-    languages_for_google_ = configs["languages_for_google"]
-
     def __init__(self):
+        self.languages_for_google_ = configs["languages_for_google"]
+
         # check if proxy has been set manually
         if settings["https_proxy"]:
             if system_name == "Linux":
@@ -298,19 +289,19 @@ class GoogleTranslator:
         src_lang = (
             "auto"
             if src_lang_index == len(src_languages) - 1
-            else GoogleTranslator.languages_for_google_[src_lang_index]
+            else self.languages_for_google_[src_lang_index]
         )
         _, trans = self.Translate(
             src_text,
             src_language=src_lang,
-            dest_language=GoogleTranslator.languages_for_google_[dest_lang_index],
+            dest_language=self.languages_for_google_[dest_lang_index],
         )
         tk_text.delete("1.0", tk.END)
         tk_text.insert(tk.END, trans)
 
 
 class OpenaiAPITranslator:
-    def __init__(self, api_key, model="gpt-3.5-turbo", stream=True):
+    def __init__(self, model="gpt-3.5-turbo", stream=True):
         openai.api_key = settings["openai_api_key"]
         self.model_ = model
         self.stream_ = stream
@@ -413,24 +404,36 @@ class OpenaiAPITranslator:
 
 class Gui:
     def __init__(self):
-        # init translator
-        engine = settings["engine"]
-        if engine == "google":
-            self.translator_ = GoogleTranslator()
-        elif engine == "baidu_api":
-            self.translator_ = BaiduAPITranslator(
-                settings["appid_for_baidu_api"], settings["private_key_for_baidu_api"]
-            )
-        elif engine == "openai_api":
-            self.translator_ = OpenaiAPITranslator(settings["openai_api_key"])
-            # self.translator_ = OpenaiAPITranslator(settings['openai_api_key'], stream=False)
-        else:
-            messagebox.showerror(message="Please choose a translation engine")
-            print("Please choose a translation engine")
-            exit(0)
+        # init
+        self.root_ = tk.Tk()
+        # create themes
+        style = ttk.Style()
+        style.theme_create(
+            "dark",
+            settings={
+                "TCombobox": {
+                    "configure": {
+                        "foreground": "white",
+                        "fieldbackground": "#292421",
+                        "background": "#464547",
+                        "arrowcolor": "white",
+                    }
+                }
+            },
+        )
+        self.Init()
+
+    def Init(self):
+        # data init
+        try:
+            LoadConfigs()
+            LoadSettings()
+        except Exception as e:
+            messagebox.showerror(message=str(e))
+            raise e
+        self.SetTranslator()
 
         # init gui
-        self.root_ = tk.Tk()
         self.root_.title("Selextrans")
         self.root_.attributes("-topmost", True)
         self.root_.iconphoto(True, tk.PhotoImage(file=AbsolutePath(configs["icon"])))
@@ -445,6 +448,7 @@ class Gui:
         # self.record_btn_ = tk.Button(self.row_frame_, text='Record', command=lambda event: 1)
         self.outputText_ = tk.Text(self.root_, height=18, width=30)
 
+        # theme set
         if settings["mode"] == "dark":
             self.inputText_.configure(
                 background="#292421", foreground="white", insertbackground="white"
@@ -458,20 +462,7 @@ class Gui:
             # foreground: text, fieldbackground: background area, background: drop-down box, arrowcolor: arrow color
             # ttk.Style().configure('TCombobox', foreground='white', fieldbackground='#292421', background='#292421', arrowcolor='white') # can work on Linux but not on Windows
             style = ttk.Style()
-            style.theme_create(
-                "combobox_style",
-                settings={
-                    "TCombobox": {
-                        "configure": {
-                            "foreground": "white",
-                            "fieldbackground": "#292421",
-                            "background": "#464547",
-                            "arrowcolor": "white",
-                        }
-                    }
-                },
-            )
-            style.theme_use("combobox_style")
+            style.theme_use("dark")
 
             # for drop-down list
             self.root_.option_add("*TCombobox*Listbox*Foreground", "white")
@@ -496,6 +487,7 @@ class Gui:
 
         self.kbController_ = KeyController()
 
+        # listen when the window isn't focused
         try:
             self.listener_ = KeyListener(
                 {
@@ -510,7 +502,6 @@ class Gui:
         except Exception as e:
             messagebox.showerror(message=str(e))
             raise e
-
         self.listener_.start()
         # self.listener_.join()
 
@@ -518,20 +509,45 @@ class Gui:
         # as tkinter is threadsafe, we simply do some ui updations in the backend threads for convience
         self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(max_workers=1)
 
-        # ctrl + a to select all
+        # listen when the window is focused
         def InputTextSelectAll(event):
+            """ctrl + a to select all"""
             self.inputText_.tag_add("sel", "1.0", "end")
             return "break"
 
         self.inputText_.bind("<Control-a>", InputTextSelectAll)
         self.inputText_.bind("<Control-A>", InputTextSelectAll)
-
         self.inputText_.bind(
             "<Return>", lambda event: self.thread_pool_.submit(self.DoTrans, True)
         )
+        self.root_.bind("<F5>", self.Refresh)
 
     def Loop(self):
         self.root_.mainloop()
+
+    def Refresh(self, event):
+        geometry_info = self.root_.geometry()
+        self.root_.withdraw()
+        ttk.Style().theme_use("default")
+        self.root_.option_clear()
+        self.listener_.stop()
+        self.Init()
+        self.root_.geometry(geometry_info)
+        self.root_.deiconify()
+
+    def SetTranslator(self):
+        engine = settings["engine"]
+        if engine == "google":
+            self.translator_ = GoogleTranslator()
+        elif engine == "baidu_api":
+            self.translator_ = BaiduAPITranslator()
+        elif engine == "openai_api":
+            self.translator_ = OpenaiAPITranslator(settings["openai_api_key"])
+            # self.translator_ = OpenaiAPITranslator(settings['openai_api_key'], stream=False)
+        else:
+            messagebox.showerror(message="Please choose a translation engine")
+            print("Please choose a translation engine")
+            exit(0)
 
     def TextTranslate(self):
         pre_content = pyperclip.paste()

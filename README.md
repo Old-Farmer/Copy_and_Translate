@@ -83,6 +83,10 @@ Press `F4`, select a screen area, then translation results will be shown. Auto s
 
 **To select an area**, you need to press the left mouse button, drag the mouse to select the desired area, and finally release the button to complete the selection. You can press the right mouse button or `Esc` to cancel a selection.
 
+### Other functions
+
+* `F5` for refreshing
+
 ## Run and Setup
 
 Directly run the `run.py`.

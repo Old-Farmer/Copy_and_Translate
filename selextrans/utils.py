@@ -21,15 +21,16 @@ class KeyController(keyboard.Controller):
 
 
 class KeyListener(keyboard.Listener):
-    '''
+    """
     Customized key listener for key combinations
-    '''
+    """
 
     def __init__(self, keys_to_callback):
-
         self.pressed_ = set()
-        self.keys_to_callback_ = {frozenset([self.canonical(
-            key) for key in keyboard.HotKey.parse(k)]): v for k, v in keys_to_callback.items()}
+        self.keys_to_callback_ = {
+            frozenset([self.canonical(key) for key in keyboard.HotKey.parse(k)]): v
+            for k, v in keys_to_callback.items()
+        }
         # print(self.keys_to_callback_)
 
         super().__init__(on_press=self.OnPress, on_release=self.OnRelease)
@@ -54,9 +55,9 @@ class KeyListener(keyboard.Listener):
 
 
 def PrintScreen(area=True):
-    '''
+    """
     use tkinter, return PIL.Image.Image
-    '''
+    """
     if not area:
         return pyautogui.screenshot()
 
@@ -65,7 +66,8 @@ def PrintScreen(area=True):
         # print("Start selecting")
         start_x, start_y = event.x, event.y
         rectangle_area = canvas.create_rectangle(
-            start_x, start_y, start_x+1, start_y+1, outline='#ea66a6',  width=3)
+            start_x, start_y, start_x + 1, start_y + 1, outline="#ea66a6", width=3
+        )
 
     def OnMouseRightClick(event):
         # print("Selecting canceled")
@@ -93,8 +95,7 @@ def PrintScreen(area=True):
             return
         # print screen
         # faster than ImageGrab.grab()
-        img = pyautogui.screenshot(
-            region=(top_left[0], top_left[1], width, height))
+        img = pyautogui.screenshot(region=(top_left[0], top_left[1], width, height))
 
     def OnMouseMove(event):
         nonlocal rectangle_area
@@ -117,7 +118,7 @@ def PrintScreen(area=True):
 
     canvas = tk.Canvas(root, height=screen_height, width=screen_width)
     canvas.pack()
-    root.configure(cursor='crosshair')
+    root.configure(cursor="crosshair")
 
     rectangle_area = None
     start_x, start_y = 0, 0
@@ -133,19 +134,18 @@ def PrintScreen(area=True):
 
 
 def PrintScreenBeautifully(area=True):
-    '''
+    """
     use pyqt5, return PIL.Image.Image
     only can be called in the main thread
-    '''
-    class ScreenPrinter(QWidget):
+    """
 
+    class ScreenPrinter(QWidget):
         def __init__(self):
             self.app_ = QApplication(sys.argv)
 
             super().__init__()
-            self.setWindowFlags(Qt.FramelessWindowHint |
-                                Qt.WindowStaysOnTopHint)
-            self.setStyleSheet('''background-color:black; ''')
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+            self.setStyleSheet("""background-color:black; """)
             self.setWindowOpacity(0.5)  # alpha
             dw = QDesktopWidget()
             screen_width = dw.screenGeometry().width()
@@ -161,8 +161,9 @@ def PrintScreenBeautifully(area=True):
 
             # fullscreen, or the mask may not be cover fullscreen (esp. tkinter windows) (don't know reason)
             self.showFullScreen()
-            self.setWindowState(self.windowState() & ~
-                                Qt.WindowFullScreen)  # show the taskbar
+            self.setWindowState(
+                self.windowState() & ~Qt.WindowFullScreen
+            )  # show the taskbar
             self.app_.exec_()
 
         def paintEvent(self, event):
@@ -212,8 +213,9 @@ def PrintScreenBeautifully(area=True):
                     self.close()
                     return
                 # print screen
-                self.img_ = pyautogui.screenshot(region=(
-                    top_left[0], top_left[1], width, height))  # faster than ImageGrab.grab()
+                self.img_ = pyautogui.screenshot(
+                    region=(top_left[0], top_left[1], width, height)
+                )  # faster than ImageGrab.grab()
                 # self.is_pressing_left_button_ = False
                 self.close()
 

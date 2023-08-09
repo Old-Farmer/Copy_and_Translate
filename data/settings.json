@@ -1,18 +1,13 @@
 {
+    "https_proxy": "http://127.0.0.1:7890/",
     "request_url_for_baidu_api": "https://fanyi-api.baidu.com/api/trans/vip/translate",
     "private_key_for_baidu_api": "",
     "appid_for_baidu_api": "",
-
     "openai_api_key": "",
-
     "engine": "google",
-
     "mode": "dark",
-
     "text_translate_shortcut_key": "<f2>",
     "screenshot_translate_shortcut_key": "<f4>",
-
     "copy_key": "<ctrl>+c",
-
     "tesseract_cmd": "tesseract"
 }

@@ -8,26 +8,25 @@ from selextrans.paths import AbsolutePath
 configs = LoadData(configs_file)
 
 # download language data files
-tessdata_dir =  AbsolutePath(configs['tessdata_dir'])
+tessdata_dir = AbsolutePath(configs["tessdata_dir"])
 if not os.path.exists(tessdata_dir):
     os.makedirs(tessdata_dir)
 
-url_base = 'https://github.com/tesseract-ocr/tessdata/raw/4.00'
-file_extention = '.traineddata'
+url_base = "https://github.com/tesseract-ocr/tessdata/raw/4.00"
+file_extention = ".traineddata"
 
-languages = configs['languages_for_tesseract']
+languages = configs["languages_for_tesseract"]
 
 
 def DownloadFileWithProgressBar(url, save_path):
     response = urllib.request.urlopen(url)
-    file_size = int(response.info().get('Content-Length', 0))
+    file_size = int(response.info().get("Content-Length", 0))
 
-    progress_bar = tqdm(total=file_size, unit='B',
-                        unit_scale=True, postfix=save_path)
+    progress_bar = tqdm(total=file_size, unit="B", unit_scale=True, postfix=save_path)
 
     try:
         # download and update progress bar
-        with open(save_path, 'wb') as file:
+        with open(save_path, "wb") as file:
             while True:
                 buffer = response.read(8192)
                 if not buffer:
@@ -54,11 +53,11 @@ def DownloadFile(url, save_path):
 # check and download
 for lang in languages:
     file_name = lang + file_extention
-    save_path = tessdata_dir + '/' + file_name
+    save_path = tessdata_dir + "/" + file_name
     if os.path.exists(save_path):  # exist just skip
         continue
 
-    url = url_base + '/' + file_name
+    url = url_base + "/" + file_name
     DownloadFileWithProgressBar(url, save_path)
 
-print('Setup OK')
+print("Setup OK")

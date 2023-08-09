@@ -1,4 +1,5 @@
 __pycache__/
+.vscode/
 
 note.md
 
@@ -8,4 +9,4 @@ private.txt
 
 tessdata/
 
-easytrans.db
+*.db

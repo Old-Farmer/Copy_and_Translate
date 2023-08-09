@@ -24,7 +24,7 @@ cd Selextrans
 ./app.sh # run the app
 ```
 
-## Depencies
+## Dependencies
 
 ### Linux
 
@@ -63,7 +63,7 @@ pip install -r requirements_Linux.txt --upgrade
 ```
 
 ```powershell
-# For Windows (not support yet)
+# For Windows
 pip install -r requirements_Windows.txt --upgrade
 ```
 
@@ -95,29 +95,23 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 ```json
 {
+    "https_proxy": "http://127.0.0.1:7890/",
     "request_url_for_baidu_api": "https://fanyi-api.baidu.com/api/trans/vip/translate",
     "private_key_for_baidu_api": "",
     "appid_for_baidu_api": "",
-
     "openai_api_key": "",
-
     "engine": "google",
-
     "mode": "dark",
-
     "text_translate_shortcut_key": "<f2>",
     "screenshot_translate_shortcut_key": "<f4>",
-
     "copy_key": "<ctrl>+c",
-
     "tesseract_cmd": "tesseract"
-
 }
 ```
 
 `"engine"` can be set as `"google"`, `"baidu_api"` or `"openai_api"`.
 
-`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.**
+`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.** Googletrans lib needs your network proxy setting if you have set it in your computer. This software can automatically detect you proxy setting. But if the automatic detection can't work for you computer, you can manually set `"https_proxy"` to specify the proxy. Leave it empty if you never set network proxy in your computer or you want automaitc detection to work.
 
 `"baidu_api"` engine uses 百度通用文本翻译API (Baidu General Text Translation API), and requires `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` to be set ( The corresponding website is [百度翻译开放平台](https://api.fanyi.baidu.com/doc/21)  ).
 

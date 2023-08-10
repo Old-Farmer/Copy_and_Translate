@@ -20,6 +20,7 @@ import pytesseract
 import concurrent.futures
 import tiktoken
 import openai
+import gc
 
 from selextrans.data_processing import (
     DumpData,
@@ -441,19 +442,23 @@ class Gui:
         global_font = tkfont.Font(size=15)
         self.root_.option_add("*Font", global_font)
 
+        self.command_entry_ = tk.Entry(self.root_)
         self.src_lang_combox_ = ttk.Combobox(self.root_, values=src_languages)
-        self.inputText_ = tk.Text(self.root_, height=18, width=30)
+        self.input_text_ = tk.Text(self.root_, height=18, width=30)
         self.row_frame_ = tk.Frame(self.root_, highlightthickness=0, borderwidth=0)
         self.dest_lang_combox_ = ttk.Combobox(self.row_frame_, values=dest_languages)
         # self.record_btn_ = tk.Button(self.row_frame_, text='Record', command=lambda event: 1)
-        self.outputText_ = tk.Text(self.root_, height=18, width=30)
+        self.output_text_ = tk.Text(self.root_, height=18, width=30)
 
         # theme set
         if settings["mode"] == "dark":
-            self.inputText_.configure(
+            self.command_entry_.configure(
                 background="#292421", foreground="white", insertbackground="white"
             )
-            self.outputText_.configure(
+            self.input_text_.configure(
+                background="#292421", foreground="white", insertbackground="white"
+            )
+            self.output_text_.configure(
                 background="#292421", foreground="white", insertbackground="white"
             )
             # self.record_btn_.configure(
@@ -468,17 +473,18 @@ class Gui:
             self.root_.option_add("*TCombobox*Listbox*Foreground", "white")
             self.root_.option_add("*TCombobox*Listbox*Background", "#292421")
 
-        self.src_lang_combox_.grid(row=0, column=0, sticky=tk.EW)
-        self.inputText_.grid(row=1, column=0, sticky=tk.NSEW)
-        self.row_frame_.grid(row=2, column=0, sticky=tk.EW)
+        # self.command_entry_.grid(row=0, column=0, sticky=tk.EW)
+        self.src_lang_combox_.grid(row=1, column=0, sticky=tk.EW)
+        self.input_text_.grid(row=2, column=0, sticky=tk.NSEW)
+        self.row_frame_.grid(row=3, column=0, sticky=tk.EW)
         self.dest_lang_combox_.grid(row=0, column=0, sticky=tk.NSEW)
         # self.record_btn_.grid(row=0, column=1, sticky=tk.NSEW)
-        self.outputText_.grid(row=3, column=0, sticky=tk.NSEW)
+        self.output_text_.grid(row=4, column=0, sticky=tk.NSEW)
 
         # set weight
         self.root_.columnconfigure(0, weight=1)
-        self.root_.rowconfigure(1, weight=1)
-        self.root_.rowconfigure(3, weight=1)
+        self.root_.rowconfigure(2, weight=1)
+        self.root_.rowconfigure(4, weight=1)
         self.row_frame_.rowconfigure(0, weight=1)
         self.row_frame_.columnconfigure(0, weight=1)
 
@@ -510,22 +516,44 @@ class Gui:
         self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(max_workers=1)
 
         # listen when the window is focused
-        def InputTextSelectAll(event):
+        def TextSelectAll(event):
             """ctrl + a to select all"""
-            self.inputText_.tag_add("sel", "1.0", "end")
+            event.widget.tag_add("sel", "1.0", "end")
             return "break"
 
-        self.inputText_.bind("<Control-a>", InputTextSelectAll)
-        self.inputText_.bind("<Control-A>", InputTextSelectAll)
-        self.inputText_.bind(
+        self.input_text_.bind("<Control-a>", TextSelectAll)
+        self.input_text_.bind("<Control-A>", TextSelectAll)
+        self.input_text_.bind(
             "<Return>", lambda event: self.thread_pool_.submit(self.DoTrans, True)
         )
         self.root_.bind("<F5>", self.Refresh)
+
+        def ShowCommandEntry(event):
+            self.command_entry_.grid(row=0, column=0, sticky=tk.EW)
+            self.command_entry_.focus()
+
+        self.root_.bind(
+            "<F1>",
+            ShowCommandEntry,
+        )
+
+        def EntrySelectAll(event):
+            """ctrl + a to select all"""
+            event.widget.select_range(0, tk.END)
+            return "break"
+
+        self.command_entry_.bind("<Control-a>", EntrySelectAll)
+        self.command_entry_.bind("<Control-A>", EntrySelectAll)
+        self.command_entry_.bind(
+            "<Escape>", lambda event: self.command_entry_.grid_forget()
+        )
+        self.command_entry_.bind("<Return>", self.HandleCommand)
 
     def Loop(self):
         self.root_.mainloop()
 
     def Refresh(self, event):
+        self.command_entry_.grid_forget()  # hide it, or the ui will not be normal
         geometry_info = self.root_.geometry()
         self.root_.withdraw()
         ttk.Style().theme_use("default")
@@ -534,6 +562,7 @@ class Gui:
         self.Init()
         self.root_.geometry(geometry_info)
         self.root_.deiconify()
+        gc.collect()
 
     def SetTranslator(self):
         engine = settings["engine"]
@@ -570,9 +599,9 @@ class Gui:
         """
         src_lang_index = self.src_lang_combox_.current()
         if src_lang_index == len(src_languages) - 1:
-            self.inputText_.delete("1.0", tk.END)
-            self.outputText_.delete("1.0", tk.END)
-            self.outputText_.insert(
+            self.input_text_.delete("1.0", tk.END)
+            self.output_text_.delete("1.0", tk.END)
+            self.output_text_.insert(
                 tk.END, "[Please choose a specific language for ocr]"
             )
             return
@@ -586,9 +615,9 @@ class Gui:
                 config=tessdata_dir_config,
             )
         except Exception as e:
-            self.inputText_.delete("1.0", tk.END)
-            self.outputText_.delete("1.0", tk.END)
-            self.outputText_.insert(tk.END, f"[Error: {e}]")
+            self.input_text_.delete("1.0", tk.END)
+            self.output_text_.delete("1.0", tk.END)
+            self.output_text_.insert(tk.END, f"[Error: {e}]")
             print(e)
             return
 
@@ -602,24 +631,24 @@ class Gui:
 
     def DoTrans(self, content_from_input_text=False, content=""):
         if content_from_input_text:
-            content = self.inputText_.get("1.0", tk.END)
+            content = self.input_text_.get("1.0", tk.END)
             # print(content)
 
         # trans = BaiduTranslate(content.replace('\n', '\\n'), 'en')[1].replace('\\', '\n') # baidu api has some problems with '\n'
 
         content = ProcessText(content)
         # print(content)
-        self.inputText_.delete("1.0", tk.END)
-        self.inputText_.insert(tk.END, content)
+        self.input_text_.delete("1.0", tk.END)
+        self.input_text_.insert(tk.END, content)
 
-        self.outputText_.delete("1.0", tk.END)
-        self.outputText_.insert(tk.END, "[Waiting for response...]")
+        self.output_text_.delete("1.0", tk.END)
+        self.output_text_.insert(tk.END, "[Waiting for response...]")
 
         src_lang_index = self.src_lang_combox_.current()
         dest_lang_index = self.dest_lang_combox_.current()
 
         self.translator_.TranslateWrapper(
-            self.outputText_, content, src_lang_index, dest_lang_index
+            self.output_text_, content, src_lang_index, dest_lang_index
         )
 
     # def RegisterTextTranslate(self):
@@ -630,3 +659,36 @@ class Gui:
 
     def RegisterDoTrans(self, content_from_input_text=False, content=""):
         self.thread_pool_.submit(self.DoTrans, content_from_input_text, content)
+
+    def HandleCommand(self, event):
+        command = self.command_entry_.get()
+        command_args = command.split(" ")
+        result = True
+        try:
+            # args: set key string_value
+            if (
+                len(command_args) == 3
+                and command_args[0] == "set"
+                and settings.get(command_args[1])
+            ):
+                settings[command_args[1]] = command_args[2]
+                SaveSettings()
+            elif len(command_args) == 1 and command_args[0] in ("help", "h"):
+                self.output_text_.delete("1.0", tk.END)
+                self.output_text_.insert(
+                    tk.END,
+                    "Help of all commands\n\
+Usage:\n\
+1. set <key> <string_value>        Set a known key value(string type) to settings.json",
+                )
+            else:
+                result = False
+        except IndexError:
+            result = False
+        self.command_entry_.delete(0, tk.END)
+        if not result:
+            self.output_text_.delete("1.0", tk.END)
+            self.output_text_.insert(tk.END, "[Please input a correct command]")
+        else:
+            # self.command_entry_.grid_forget()  # successful, hide the command entry
+            pass

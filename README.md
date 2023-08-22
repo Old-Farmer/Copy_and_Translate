@@ -48,7 +48,6 @@ sudo apt install xclip tesseract-ocr
 * googletrans>=4.0.0rc1
 * httpcore
 * tkinter
-* winreg **(For Windows)**
 * pytesseract
 * tqdm
 * openai
@@ -59,12 +58,12 @@ sudo apt install xclip tesseract-ocr
 ```shell
 # For linux
 sudo apt install python3-tk # For tkinter
-pip install -r requirements_Linux.txt --upgrade
+pip install -r requirements.txt --upgrade
 ```
 
 ```powershell
 # For Windows
-pip install -r requirements_Windows.txt --upgrade
+pip install -r requirements.txt --upgrade
 ```
 
 ## How to Use
@@ -89,7 +88,7 @@ Press `F4`, select a screen area, then translation results will be shown. Auto s
 
 ### Command
 
- `F1` for Toggling the command entry, `esc` for escaping it.
+ `F1` for Toggling the command entry.
 
 Input `help` into the command entry for more information.
 

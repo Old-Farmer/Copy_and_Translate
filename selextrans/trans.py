@@ -40,7 +40,7 @@ langid.classify("")
 # kText = 0
 # kImage = 1
 
-# golbal var
+# global var
 languages = []
 src_languages = []
 dest_languages = []
@@ -81,9 +81,9 @@ def SaveSettings():
     DumpData(settings_file, settings)
 
 
-def PrintSceenToClipboard():
+def PrintScreenToClipboard():
     """
-    Using tools for printscreen, not use now
+    Use other tools for printing screen, not use now
     """
     if system_name == "Linux":  # linux
         try:
@@ -169,7 +169,7 @@ class BaiduAPITranslator:
         r = requests.get(self.request_url_, params=params)
 
         if r.status_code != 200:
-            return 0, "Error happend, try again!"
+            return 0, "Error happened, try again!"
         else:
             response = r.json()
             if response.get("trans_result") is not None:
@@ -387,10 +387,10 @@ class OpenaiAPITranslator:
             if self.stream_:
                 tk_text.delete("1.0", tk.END)
                 tk_text.insert(tk.END, "[Generating...]\n")
-                for chunck in response:
+                for chunk in response:
                     content = (
                         OpenaiAPITranslator.GetContentWithChatCompletionResponseChunk(
-                            chunck
+                            chunk
                         )
                     )
                     tk_text.insert(tk.END, content)
@@ -443,10 +443,10 @@ class Gui:
         self.root_.option_add("*Font", global_font)
 
         self.command_entry_ = tk.Entry(self.root_)
-        self.src_lang_combox_ = ttk.Combobox(self.root_, values=src_languages)
+        self.src_lang_combobox_ = ttk.Combobox(self.root_, values=src_languages)
         self.input_text_ = tk.Text(self.root_, height=18, width=30)
         self.row_frame_ = tk.Frame(self.root_, highlightthickness=0, borderwidth=0)
-        self.dest_lang_combox_ = ttk.Combobox(self.row_frame_, values=dest_languages)
+        self.dest_lang_combobox_ = ttk.Combobox(self.row_frame_, values=dest_languages)
         # self.record_btn_ = tk.Button(self.row_frame_, text='Record', command=lambda event: 1)
         self.output_text_ = tk.Text(self.root_, height=18, width=30)
 
@@ -474,10 +474,10 @@ class Gui:
             self.root_.option_add("*TCombobox*Listbox*Background", "#292421")
 
         # self.command_entry_.grid(row=0, column=0, sticky=tk.EW)
-        self.src_lang_combox_.grid(row=1, column=0, sticky=tk.EW)
+        self.src_lang_combobox_.grid(row=1, column=0, sticky=tk.EW)
         self.input_text_.grid(row=2, column=0, sticky=tk.NSEW)
         self.row_frame_.grid(row=3, column=0, sticky=tk.EW)
-        self.dest_lang_combox_.grid(row=0, column=0, sticky=tk.NSEW)
+        self.dest_lang_combobox_.grid(row=0, column=0, sticky=tk.NSEW)
         # self.record_btn_.grid(row=0, column=1, sticky=tk.NSEW)
         self.output_text_.grid(row=4, column=0, sticky=tk.NSEW)
 
@@ -488,8 +488,8 @@ class Gui:
         self.row_frame_.rowconfigure(0, weight=1)
         self.row_frame_.columnconfigure(0, weight=1)
 
-        self.src_lang_combox_.current(len(src_languages) - 1)
-        self.dest_lang_combox_.current(0)
+        self.src_lang_combobox_.current(len(src_languages) - 1)
+        self.dest_lang_combobox_.current(0)
 
         self.kbController_ = KeyController()
 
@@ -500,19 +500,19 @@ class Gui:
                     settings["text_translate_shortcut_key"]: self.TextTranslate,
                     settings[
                         "screenshot_translate_shortcut_key"
-                    ]: self.ReigisterSrceenshotTranslateToMainLoop,
+                    ]: self.RegisterScreenshotTranslateToMainLoop,
                 }
             )
             # self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.TextTranslate,
-            #                               settings['screenshot_translate_shortcut_key']: self.SrceenshotTranslate})
+            #                               settings['screenshot_translate_shortcut_key']: self.ScreenshotTranslate})
         except Exception as e:
             messagebox.showerror(message=str(e))
             raise e
         self.listener_.start()
         # self.listener_.join()
 
-        # backend threads for time consuming tasks and some ui updations
-        # as tkinter is threadsafe, we simply do some ui updations in the backend threads for convience
+        # backend threads for time consuming tasks and some ui updates
+        # as tkinter is thread safe, we simply do some ui updates in the backend threads for convenience
         self.thread_pool_ = concurrent.futures.ThreadPoolExecutor(max_workers=1)
 
         # listen when the window is focused
@@ -528,13 +528,16 @@ class Gui:
         )
         self.root_.bind("<F5>", self.Refresh)
 
-        def ShowCommandEntry(event):
-            self.command_entry_.grid(row=0, column=0, sticky=tk.EW)
-            self.command_entry_.focus()
+        def ToggleCommandEntry(event):
+            if not self.command_entry_.winfo_viewable():
+                self.command_entry_.grid(row=0, column=0, sticky=tk.EW)
+                self.command_entry_.focus()
+            else:
+                self.command_entry_.grid_forget()
 
         self.root_.bind(
             "<F1>",
-            ShowCommandEntry,
+            ToggleCommandEntry,
         )
 
         def EntrySelectAll(event):
@@ -544,9 +547,6 @@ class Gui:
 
         self.command_entry_.bind("<Control-a>", EntrySelectAll)
         self.command_entry_.bind("<Control-A>", EntrySelectAll)
-        self.command_entry_.bind(
-            "<Escape>", lambda event: self.command_entry_.grid_forget()
-        )
         self.command_entry_.bind("<Return>", self.HandleCommand)
 
     def Loop(self):
@@ -593,11 +593,11 @@ class Gui:
 
         self.RegisterDoTrans(content=content)
 
-    def SrceenshotTranslate(self):
+    def ScreenshotTranslate(self):
         """
-        print sreen then ocr then translate
+        print screen then ocr then translate
         """
-        src_lang_index = self.src_lang_combox_.current()
+        src_lang_index = self.src_lang_combobox_.current()
         if src_lang_index == len(src_languages) - 1:
             self.input_text_.delete("1.0", tk.END)
             self.output_text_.delete("1.0", tk.END)
@@ -623,11 +623,11 @@ class Gui:
 
         self.RegisterDoTrans(content=content)
 
-    def ReigisterSrceenshotTranslateToMainLoop(self):
+    def RegisterScreenshotTranslateToMainLoop(self):
         """
-        PrintScreenBeautifully() use pyqt5, pyqt5 requires QApplication to be created  at main thread
+        PrintScreenBeautifully() use pyqt5, pyqt5 requires QApplication to be created at main thread
         """
-        self.root_.after(0, self.SrceenshotTranslate)
+        self.root_.after(0, self.ScreenshotTranslate)
 
     def DoTrans(self, content_from_input_text=False, content=""):
         if content_from_input_text:
@@ -644,8 +644,8 @@ class Gui:
         self.output_text_.delete("1.0", tk.END)
         self.output_text_.insert(tk.END, "[Waiting for response...]")
 
-        src_lang_index = self.src_lang_combox_.current()
-        dest_lang_index = self.dest_lang_combox_.current()
+        src_lang_index = self.src_lang_combobox_.current()
+        dest_lang_index = self.dest_lang_combobox_.current()
 
         self.translator_.TranslateWrapper(
             self.output_text_, content, src_lang_index, dest_lang_index
@@ -655,7 +655,7 @@ class Gui:
     #     self.thread_pool_.submit(self.TextTranslate)
 
     # def RegisterScreenshotTranslate(self):
-    #     self.thread_pool_.submit(self.SrceenshotTranslate)
+    #     self.thread_pool_.submit(self.ScreenshotTranslate)
 
     def RegisterDoTrans(self, content_from_input_text=False, content=""):
         self.thread_pool_.submit(self.DoTrans, content_from_input_text, content)

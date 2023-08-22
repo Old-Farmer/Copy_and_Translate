@@ -13,7 +13,7 @@ if not os.path.exists(tessdata_dir):
     os.makedirs(tessdata_dir)
 
 url_base = "https://github.com/tesseract-ocr/tessdata/raw/4.00"
-file_extention = ".traineddata"
+file_extension = ".traineddata"
 
 languages = configs["languages_for_tesseract"]
 
@@ -52,7 +52,7 @@ def DownloadFile(url, save_path):
 
 # check and download
 for lang in languages:
-    file_name = lang + file_extention
+    file_name = lang + file_extension
     save_path = tessdata_dir + "/" + file_name
     if os.path.exists(save_path):  # exist just skip
         continue

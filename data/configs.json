@@ -26,6 +26,33 @@
         "jp",
         "kor"
     ],
+    "languages_for_translators_backup": [
+        "zh",
+        "",
+        "en",
+        "fr",
+        "ru",
+        "ja",
+        "ko"
+    ],
+    "languages_for_translators_baidu": [
+        "zh",
+        "cht",
+        "en",
+        "fr",
+        "ru",
+        "ja",
+        "ko"
+    ],
+    "languages_for_translators_youdao": [
+        "zh",
+        "",
+        "en",
+        "fr",
+        "ru",
+        "ja",
+        "ko"
+    ],
     "languages_for_tesseract": [
         "chi_sim",
         "chi_tra",

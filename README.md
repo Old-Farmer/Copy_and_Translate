@@ -54,6 +54,7 @@ sudo apt install xclip tesseract-ocr
 * tiktoken
 * pyqt5
 * pyautogui
+* translators
 
 ```shell
 # For linux
@@ -109,7 +110,8 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
     "private_key_for_baidu_api": "",
     "appid_for_baidu_api": "",
     "openai_api_key": "",
-    "engine": "google",
+    "engine": "translators",
+    "translators_engine_service": "baidu",
     "mode": "dark",
     "text_translate_shortcut_key": "<f2>",
     "screenshot_translate_shortcut_key": "<f4>",
@@ -118,13 +120,15 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 }
 ```
 
-`"engine"` can be set as `"google"`, `"baidu_api"` or `"openai_api"`.
+`"engine"` can be set as `"google"`, `"baidu_api"`, `"translators"` or  `"openai_api"`.
 
-`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.** Googletrans lib needs your network proxy setting if you have set it in your computer. This software can automatically detect you proxy setting. But if the automatic detection can't work for you computer, you can manually set `"https_proxy"` to specify the proxy. Leave it empty if you never set network proxy in your computer or you want automatic detection to work.
+`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.** 
 
-`"baidu_api"` engine uses 百度通用文本翻译API (Baidu General Text Translation API), and requires `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` to be set ( The corresponding website is [百度翻译开放平台](https://api.fanyi.baidu.com/doc/21)  ).
+`"baidu_api"` engine uses 百度通用文本翻译API (Baidu General Text Translation API), and requires `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` to be set ( The corresponding website is [百度翻译开放平台](https://api.fanyi.baidu.com/doc/21) ).
 
 `"openai_api"` engine requires `"openai_api_key"` to be set. (The corresponding website is [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)) `"openai_api"` engine is **not as fast as other engines**, so the app shows translation results **token by token**.
+
+`"translators"` engine is based on translators lib ([https://github.com/UlionTse/translators](https://github.com/UlionTse/translators)). `"translators_engine_service"` should be set for choosing a specific service. Now selextrans supports `"baidu"` and `"youdao"`. If you want more, add specifc `"languages_for_translators_xxx"` kv.(please refer chapter Customize languages).
 
 `"mode"` can be set as `"dark"` or `"light"`.
 
@@ -132,7 +136,9 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 `"copy_key"` is used for text translate to copy selected text to this app. The default setting `"<ctrl>+c"` can work for most softwares, except some softwares, e.g. command line programs. If you really want to use this app with specific softwares, set `"copy_key"` as you want.
 
-`"tesseract_cmd"` defines the command to start tesseract, which can be the executable file path or just the command `"tesseract"`. For Windows, if you do not set the environment variable for tesseract, set `"tesseract_cmd"` as the executable file `tesseract.exe` path. Use `/` or `\\` as separators.
+`"tesseract_cmd"` defines the command to start tesseract, which can be the executable file path or just the command `"tesseract"`. For Windows, if you do not set the environment variable for tesseract, set `"tesseract_cmd"` as the executable file `tesseract.exe` path. Use `/` or `\\` as separators. 
+
+***Attention:*** **Googletrans lib** and **Translators lib** needs your network proxy setting if you have set it in your computer. This software can automatically detect you proxy setting. But if the automatic detection can't work for you computer, you can manually set `"https_proxy"` to specify the proxy. Leave it empty if you never set network proxy in your computer or you want automatic detection to work.
 
 ## Language Support
 

@@ -10,3 +10,4 @@ openai
 tiktoken
 pyqt5
 pyautogui
+translators

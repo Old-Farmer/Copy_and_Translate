@@ -8,6 +8,10 @@ from PyQt5.QtGui import QPainter, QBitmap, QCursor, QPen, QBrush
 
 import pyautogui
 
+import subprocess
+import os
+import platform
+
 
 class KeyController(keyboard.Controller):
     def __init__(self):
@@ -234,3 +238,18 @@ def PrintScreenBeautifully(area=True):
 
     sp = ScreenPrinter()
     return sp.img_
+
+
+class FileController:
+    system_name = platform.system()
+
+    @classmethod
+    def openByOSDefaultApp(cls, file_name):
+        if cls.system_name == "Linux":
+            subprocess.call(["xdg-open", file_name])
+        elif cls.system_name == "Windows":
+            os.startfile(file_name)
+        elif cls.system_name == "Darwin":
+            subprocess.call(["open", file_name])
+        else:
+            pass

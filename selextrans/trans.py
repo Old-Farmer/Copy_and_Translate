@@ -21,6 +21,7 @@ import concurrent.futures
 import tiktoken
 import openai
 import gc
+import translators
 
 from selextrans.data_processing import (
     DumpData,
@@ -31,7 +32,12 @@ from selextrans.data_processing import (
     settings_file,
 )
 from selextrans.paths import AbsolutePath
-from selextrans.utils import KeyController, KeyListener, PrintScreenBeautifully
+from selextrans.utils import (
+    KeyController,
+    KeyListener,
+    PrintScreenBeautifully,
+    FileController,
+)
 
 # The first call is always slow Because langid should do some init, So we call it here
 langid.classify("")
@@ -116,6 +122,8 @@ def ProcessText(text):
         match_str = match.group()
         if match_str[0] == "—":
             return ""
+        elif match_str[0] == "-":
+            return "-"
         else:
             return " "
 
@@ -125,8 +133,10 @@ def ProcessText(text):
         # simply ignore blank characters
         return re.sub(r"\s+", "", text)
     else:
-        # ignore em-dash '—' (\u1024) + new_line (\r\n on Windows & \n on Unix-like), for ocr results; a bunch of blank characters -> one space
-        return re.sub(r"\s+|—\r?\n", Replace, text)
+        # ignore em-dash '—' (\u1024) + new_line (\r\n on Windows & \n on Unix-like), for ocr results;
+        # be care of '-' followed by a new_line(\r\n for pdf or Windows text, \n for Unix-like text), ignore the new_line but '-';
+        # a bunch of blank characters -> one space
+        return re.sub(r"\s+|—\r?\n|-\r?\n", Replace, text)
 
 
 class BaiduAPITranslator:
@@ -195,8 +205,6 @@ class BaiduAPITranslator:
 
 
 class GoogleTranslator:
-    """ """
-
     def __init__(self):
         self.languages_for_google_ = configs["languages_for_google"]
 
@@ -403,6 +411,86 @@ class OpenaiAPITranslator:
             tk_text.insert(tk.END, f"[Error: {e}]")
 
 
+class TranslatorsTranslator:
+    """ """
+
+    def __init__(self, service="youdao"):
+        service_specified_key = "languages_for_translators" + "_" + service
+        service_specified_languages = configs.get(service_specified_key)
+        if service_specified_languages:
+            self.languages_for_translators_ = service_specified_languages
+        else:  # backup
+            self.languages_for_translators_ = configs[
+                "languages_for_translators_backup"
+            ]
+
+        self.service_ = service
+        self.proxies_ = {}
+        if settings["https_proxy"]:
+            self.proxies_["https_proxy"] = settings["https_proxy"]
+            return
+
+        if system_name == "Linux" or system_name == "Darwin":  # linux or mac
+            if os.environ.get("https_proxy"):
+                self.proxies_["https_proxy"] = os.environ["https_proxy"]
+
+        elif system_name == "Windows":  # windows
+            import winreg
+
+            INTERNET_SETTINGS = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Internet Settings",
+            )
+
+            def GetProxySettings():
+                try:
+                    proxy_enabled = winreg.QueryValueEx(
+                        INTERNET_SETTINGS, "ProxyEnable"
+                    )[0]
+                    if proxy_enabled == 1:
+                        proxy_server = winreg.QueryValueEx(
+                            INTERNET_SETTINGS, "ProxyServer"
+                        )[0]
+                        return proxy_server
+                    else:
+                        return None
+                except FileNotFoundError:
+                    return None
+
+            proxy = GetProxySettings()
+            if proxy:
+                self.proxies_["https_proxy"] = proxy
+
+    def Translate(self, src_text, src_language="auto", dest_language="en"):
+        try:
+            r = translators.translate_text(
+                query_text=src_text,
+                translator=self.service_,
+                from_language=src_language,
+                to_language=dest_language,
+                # if_use_preacceleration=True,  # Don't know what it can to do
+                proxies=self.proxies_,
+            )
+            return 1, r
+        except Exception as e:
+            # raise e
+            return 0, f"[Error: {e}]"
+
+    def TranslateWrapper(self, tk_text, src_text, src_lang_index, dest_lang_index):
+        src_lang = (
+            "auto"
+            if src_lang_index == len(src_languages) - 1
+            else self.languages_for_translators_[src_lang_index]
+        )
+        _, trans = self.Translate(
+            src_text,
+            src_language=src_lang,
+            dest_language=self.languages_for_translators_[dest_lang_index],
+        )
+        tk_text.delete("1.0", tk.END)
+        tk_text.insert(tk.END, trans)
+
+
 class Gui:
     def __init__(self):
         # init
@@ -573,6 +661,10 @@ class Gui:
         elif engine == "openai_api":
             self.translator_ = OpenaiAPITranslator(settings["openai_api_key"])
             # self.translator_ = OpenaiAPITranslator(settings['openai_api_key'], stream=False)
+        elif engine == "translators":
+            self.translator_ = TranslatorsTranslator(
+                settings["translators_engine_service"]
+            )
         else:
             messagebox.showerror(message="Please choose a translation engine")
             print("Please choose a translation engine")
@@ -673,13 +765,21 @@ class Gui:
             ):
                 settings[command_args[1]] = command_args[2]
                 SaveSettings()
+            elif len(command_args) == 2 and command_args[0] == "edit":
+                if command_args[1] in ( "settings", "s"):
+                    FileController.openByOSDefaultApp(settings_file)
+                elif command_args[1] == ("configs", "c"):
+                    FileController.openByOSDefaultApp(configs_file)
+                else:
+                    result = False
             elif len(command_args) == 1 and command_args[0] in ("help", "h"):
                 self.output_text_.delete("1.0", tk.END)
                 self.output_text_.insert(
                     tk.END,
                     "Help of all commands\n\
 Usage:\n\
-1. set <key> <string_value>        Set a known key value(string type) to settings.json",
+1. set <key> <string_value>        Set a known key value(string type) to settings.json\n\
+2. edit settings|s|configs|c        Open settings or configs file by the os default app",
                 )
             else:
                 result = False

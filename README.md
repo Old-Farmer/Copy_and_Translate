@@ -101,7 +101,7 @@ Directly run the `run.py`.
 
 ## Settings
 
-All Settings is in `data/settings.json`. Please **restart** the app if you change the file.
+All Settings is in `data/settings.json`. Please **restart** or **refresh** the app if you change the file.
 
 ```json
 {

@@ -699,6 +699,7 @@ class Gui:
         ttk.Style().theme_use("default")
         self.root_.option_clear()
         self.listener_.stop()
+        self.mouse_listener_.stop()
         self.Init()
         self.root_.geometry(geometry_info)
         self.root_.deiconify()

@@ -21,7 +21,7 @@ Here is a **quick start** for Linux users who only use `pip` and `apt` to config
 git clone https://github.com/Old-Farmer/Selextrans.git
 cd Selextrans
 ./setup.sh # Set up before first running the app
-./app.sh # run the app
+./run.py # run the app
 ```
 
 ## Dependencies
@@ -71,7 +71,7 @@ pip install -r requirements.txt --upgrade
 
 ### Text translate
 
-Select text, press `F2`, then translation results will be shown.
+Select text, then translation results will be shown.
 
 Or just type sth. into the input textbox, press `Enter`, then translation results will be shown.
 
@@ -113,6 +113,7 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
     "engine": "translators",
     "translators_engine_service": "baidu",
     "mode": "dark",
+    "text_translate_trigger_mode": "select",
     "text_translate_shortcut_key": "<f2>",
     "screenshot_translate_shortcut_key": "<f4>",
     "copy_key": "<ctrl>+c",
@@ -122,7 +123,7 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 `"engine"` can be set as `"google"`, `"baidu_api"`, `"translators"` or  `"openai_api"`.
 
-`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.** 
+`"google"` engine (**default engine**) uses googletrans lib, so using it is totally free and no configuration is required. **Please ensure that you can access the Google Translate website.**
 
 `"baidu_api"` engine uses 百度通用文本翻译API (Baidu General Text Translation API), and requires `"private_key_for_baidu_api"`and `"appid_for_baidu_api"` to be set ( The corresponding website is [百度翻译开放平台](https://api.fanyi.baidu.com/doc/21) ).
 
@@ -132,11 +133,13 @@ All Settings is in `data/settings.json`. Please **restart** the app if you chang
 
 `"mode"` can be set as `"dark"` or `"light"`.
 
+`"text_translate_trigger_mode"` can be set as `"select"` or `"key"`. If it is set as `"key"`, you should press the key specified by `"text_translate_shortcut_key"` to trigger translation.
+
 `"xx_shortcut_key"` specify shortcut key combinations for some functions. Key combinations are sequences of key identifiers separated by `"+"`. Key identifiers are either single characters representing a keyboard key, such as `"a"`, or special key names identified by names enclosed by brackets, such as `"<ctrl>"`. **You can set your own shortcut key combinations for convenience.**
 
 `"copy_key"` is used for text translate to copy selected text to this app. The default setting `"<ctrl>+c"` can work for most softwares, except some softwares, e.g. command line programs. If you really want to use this app with specific softwares, set `"copy_key"` as you want.
 
-`"tesseract_cmd"` defines the command to start tesseract, which can be the executable file path or just the command `"tesseract"`. For Windows, if you do not set the environment variable for tesseract, set `"tesseract_cmd"` as the executable file `tesseract.exe` path. Use `/` or `\\` as separators. 
+`"tesseract_cmd"` defines the command to start tesseract, which can be the executable file path or just the command `"tesseract"`. For Windows, if you do not set the environment variable for tesseract, set `"tesseract_cmd"` as the executable file `tesseract.exe` path. Use `/` or `\\` as separators.
 
 ***Attention:*** **Googletrans lib** and **Translators lib** needs your network proxy setting if you have set it in your computer. This software can automatically detect you proxy setting. But if the automatic detection can't work for you computer, you can manually set `"https_proxy"` to specify the proxy. Leave it empty if you never set network proxy in your computer or you want automatic detection to work.
 

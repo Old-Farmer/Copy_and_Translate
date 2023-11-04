@@ -11,6 +11,7 @@ from tkinter import messagebox
 import time
 import langid
 import pynput.keyboard as keyboard
+from pynput import mouse
 import re
 from googletrans import Translator  # must be >=4.0.0rc1
 from httpcore import SyncHTTPProxy
@@ -491,6 +492,48 @@ class TranslatorsTranslator:
         tk_text.insert(tk.END, trans)
 
 
+class MouseListenerForSelectTriggerMode(mouse.Listener):
+    """
+    Costumed mouse listener when trigger mode == select
+    Not a general util, so put here
+    """
+
+    def __init__(self, on_left_button_release) -> None:
+        self.last_left_button_press_time_ = 0
+        self.cur_left_button_press_time_ = 0
+        self.cur_left_button_release_time_ = 0
+        self.double_click_state = -1  # -1 for clear state, 1 for first click
+        self.on_left_button_release_ = on_left_button_release
+        super().__init__(on_click=self.OnClick)
+
+    def OnClick(self, x, y, button, pressed):
+        if button == mouse.Button.left:
+            if pressed:
+                self.cur_left_button_press_time_ = time.time()
+            else:  # released
+                self.cur_left_button_release_time_ = time.time()
+                if (
+                    self.cur_left_button_release_time_
+                    - self.cur_left_button_press_time_
+                    > 0.5
+                ):  # Consider it as a long select, so do immediately
+                    self.on_left_button_release_()
+                    self.double_click_state = -1
+                else: # not long enough, judge whether this is a part of double click
+                    if self.double_click_state == 1:
+                        if (
+                            self.cur_left_button_press_time_
+                            - self.last_left_button_press_time_
+                            < 0.5
+                        ):
+                            self.on_left_button_release_()
+                            self.double_click_state = -1
+                    else:
+                        self.double_click_state = 1
+
+                self.last_left_button_press_time_ = self.cur_left_button_press_time_
+
+
 class Gui:
     def __init__(self):
         # init
@@ -582,10 +625,19 @@ class Gui:
         self.kbController_ = KeyController()
 
         # listen when the window isn't focused
+        func_for_text_translate_shortcut_key = self.TextTranslate
+        if settings["text_translate_trigger_mode"] == "select":
+            self.mouse_listener_ = MouseListenerForSelectTriggerMode(self.TextTranslate)
+            self.mouse_listener_.start()
+            func_for_text_translate_shortcut_key = lambda: self.output_text_.delete(
+                "1.0", tk.END
+            ) or self.output_text_.insert(tk.END, "[Select text to translate]")
         try:
             self.listener_ = KeyListener(
                 {
-                    settings["text_translate_shortcut_key"]: self.TextTranslate,
+                    settings[
+                        "text_translate_shortcut_key"
+                    ]: func_for_text_translate_shortcut_key,
                     settings[
                         "screenshot_translate_shortcut_key"
                     ]: self.RegisterScreenshotTranslateToMainLoop,
@@ -681,6 +733,8 @@ class Gui:
         # sleep here to wait content copied to the clipboard
         time.sleep(0.1)
         content = pyperclip.paste()
+        if content == pre_content:  # no new data copied, just return
+            return
         pyperclip.copy(pre_content)  # recover
 
         self.RegisterDoTrans(content=content)
@@ -766,7 +820,7 @@ class Gui:
                 settings[command_args[1]] = command_args[2]
                 SaveSettings()
             elif len(command_args) == 2 and command_args[0] == "edit":
-                if command_args[1] in ( "settings", "s"):
+                if command_args[1] in ("settings", "s"):
                     FileController.openByOSDefaultApp(settings_file)
                 elif command_args[1] == ("configs", "c"):
                     FileController.openByOSDefaultApp(configs_file)
@@ -779,7 +833,8 @@ class Gui:
                     "Help of all commands\n\
 Usage:\n\
 1. set <key> <string_value>        Set a known key value(string type) to settings.json\n\
-2. edit settings|s|configs|c        Open settings or configs file by the os default app",
+2. edit settings|s|configs|c        Open settings or configs file by the os default app\n\
+3. help|h       help",
                 )
             else:
                 result = False

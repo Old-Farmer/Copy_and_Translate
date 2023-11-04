@@ -1,0 +1,67 @@
+{
+    "languages": [
+        "Chinese (simplified)",
+        "Chinese (traditional)",
+        "English",
+        "French",
+        "Russian",
+        "Japanese",
+        "Korean"
+    ],
+    "languages_for_google": [
+        "zh-cn",
+        "zh-tw",
+        "en",
+        "fr",
+        "ru",
+        "ja",
+        "ko"
+    ],
+    "languages_for_baidu_api": [
+        "zh",
+        "cht",
+        "en",
+        "fra",
+        "ru",
+        "jp",
+        "kor"
+    ],
+    "languages_for_translators_backup": [
+        "zh",
+        "",
+        "en",
+        "fr",
+        "ru",
+        "ja",
+        "ko"
+    ],
+    "languages_for_translators_baidu": [
+        "zh",
+        "cht",
+        "en",
+        "fr",
+        "ru",
+        "ja",
+        "ko"
+    ],
+    "languages_for_translators_youdao": [
+        "zh",
+        "",
+        "en",
+        "fr",
+        "ru",
+        "ja",
+        "ko"
+    ],
+    "languages_for_tesseract": [
+        "chi_sim",
+        "chi_tra",
+        "eng",
+        "fra",
+        "rus",
+        "jpn",
+        "kor"
+    ],
+    "tessdata_dir": "data/tessdata",
+    "icon": "img/selextrans.png"
+}

@@ -498,40 +498,13 @@ class MouseListenerForSelectTriggerMode(mouse.Listener):
     Not a general util, so put here
     """
 
-    def __init__(self, on_left_button_release) -> None:
-        self.last_left_button_press_time_ = 0
-        self.cur_left_button_press_time_ = 0
-        self.cur_left_button_release_time_ = 0
-        self.double_click_state = -1  # -1 for clear state, 1 for first click
+    def __init__(self, on_left_button_release):
         self.on_left_button_release_ = on_left_button_release
         super().__init__(on_click=self.OnClick)
 
     def OnClick(self, x, y, button, pressed):
-        if button == mouse.Button.left:
-            if pressed:
-                self.cur_left_button_press_time_ = time.time()
-            else:  # released
-                self.cur_left_button_release_time_ = time.time()
-                if (
-                    self.cur_left_button_release_time_
-                    - self.cur_left_button_press_time_
-                    > 0.5
-                ):  # Consider it as a long select, so do immediately
-                    self.on_left_button_release_()
-                    self.double_click_state = -1
-                else: # not long enough, judge whether this is a part of double click
-                    if self.double_click_state == 1:
-                        if (
-                            self.cur_left_button_press_time_
-                            - self.last_left_button_press_time_
-                            < 0.5
-                        ):
-                            self.on_left_button_release_()
-                            self.double_click_state = -1
-                    else:
-                        self.double_click_state = 1
-
-                self.last_left_button_press_time_ = self.cur_left_button_press_time_
+        if button == mouse.Button.left and not pressed:
+            self.on_left_button_release_()
 
 
 class Gui:
@@ -779,12 +752,15 @@ class Gui:
     def DoTrans(self, content_from_input_text=False, content=""):
         if content_from_input_text:
             content = self.input_text_.get("1.0", tk.END)
-            # print(content)
+            content = ProcessText(content)
+        else:
+            content = ProcessText(content)
+            if (
+                content == self.input_text_.get("1.0", tk.END)[0:-1]
+            ):  # the same, so return; str from input text will have a following \n
+                return
 
         # trans = BaiduTranslate(content.replace('\n', '\\n'), 'en')[1].replace('\\', '\n') # baidu api has some problems with '\n'
-
-        content = ProcessText(content)
-        # print(content)
         self.input_text_.delete("1.0", tk.END)
         self.input_text_.insert(tk.END, content)
 

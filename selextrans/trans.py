@@ -597,32 +597,7 @@ class Gui:
 
         self.kbController_ = KeyController()
 
-        # listen when the window isn't focused
-        func_for_text_translate_shortcut_key = self.TextTranslate
-        if settings["text_translate_trigger_mode"] == "select":
-            self.mouse_listener_ = MouseListenerForSelectTriggerMode(self.TextTranslate)
-            self.mouse_listener_.start()
-            func_for_text_translate_shortcut_key = lambda: self.output_text_.delete(
-                "1.0", tk.END
-            ) or self.output_text_.insert(tk.END, "[Select text to translate]")
-        try:
-            self.listener_ = KeyListener(
-                {
-                    settings[
-                        "text_translate_shortcut_key"
-                    ]: func_for_text_translate_shortcut_key,
-                    settings[
-                        "screenshot_translate_shortcut_key"
-                    ]: self.RegisterScreenshotTranslateToMainLoop,
-                }
-            )
-            # self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.TextTranslate,
-            #                               settings['screenshot_translate_shortcut_key']: self.ScreenshotTranslate})
-        except Exception as e:
-            messagebox.showerror(message=str(e))
-            raise e
-        self.listener_.start()
-        # self.listener_.join()
+        self.CreateListener()
 
         # backend threads for time consuming tasks and some ui updates
         # as tkinter is thread safe, we simply do some ui updates in the backend threads for convenience
@@ -678,6 +653,48 @@ class Gui:
         self.root_.deiconify()
         gc.collect()
 
+    def CreateListener(self):
+        # listen when the window isn't focused
+        func_for_text_translate_shortcut_key = self.TextTranslate
+        if settings["text_translate_trigger_mode"] == "select":
+            self.mouse_listener_ = MouseListenerForSelectTriggerMode(self.TextTranslate)
+            self.mouse_listener_.start()
+            func_for_text_translate_shortcut_key = lambda: self.output_text_.delete(
+                "1.0", tk.END
+            ) or self.output_text_.insert(tk.END, "[Select text to translate]")
+        try:
+            self.listener_ = KeyListener(
+                {
+                    settings[
+                        "text_translate_shortcut_key"
+                    ]: func_for_text_translate_shortcut_key,
+                    settings[
+                        "screenshot_translate_shortcut_key"
+                    ]: self.RegisterScreenshotTranslateToMainLoop,
+                }
+            )
+            # self.listener_ = KeyListener({settings['text_translate_shortcut_key']: self.TextTranslate,
+            #                               settings['screenshot_translate_shortcut_key']: self.ScreenshotTranslate})
+        except Exception as e:
+            messagebox.showerror(message=str(e))
+            raise e
+        self.listener_.start()
+        # self.listener_.join()
+
+    # def OnMinimize(self, event):
+    #     print("mini")
+    #     self.listener_.stop()
+    #     self.mouse_listener_.stop()
+
+    # def OnRestore(self, event):
+    #     print("res")
+    #     try:
+    #         self.listener_.stop()
+    #         self.mouse_listener_.stop()
+    #     except:
+    #         pass
+    #     self.CreateListener()
+
     def SetTranslator(self):
         engine = settings["engine"]
         if engine == "google":
@@ -698,6 +715,7 @@ class Gui:
 
     def TextTranslate(self):
         pre_content = pyperclip.paste()
+        pyperclip.copy("") # clear clipboard
 
         # with self.kbController_.pressed(kb.Key.ctrl):
         #   self.kbController_.press('c')
@@ -707,7 +725,7 @@ class Gui:
         # sleep here to wait content copied to the clipboard
         time.sleep(0.1)
         content = pyperclip.paste()
-        if content == pre_content:  # no new data copied, just return
+        if content == "":  # no new data copied, just return
             return
         pyperclip.copy(pre_content)  # recover
 

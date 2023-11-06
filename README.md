@@ -163,4 +163,4 @@ If you want to add other languages, Please follow the following steps:
 
 ## Bugs list
 
-* Note that translators engine may have some bugs, which are out of my ablility to fix.
+* Note that translators engine supplies not that stable service.

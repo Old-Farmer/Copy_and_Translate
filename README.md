@@ -47,23 +47,15 @@ sudo apt install xclip tesseract-ocr
 * langid
 * googletrans>=4.0.0rc1
 * httpcore
-* tkinter
 * pytesseract
 * tqdm
 * openai
 * tiktoken
-* pyqt5
 * pyautogui
 * translators
+* pyside6
 
 ```shell
-# For linux
-sudo apt install python3-tk # For tkinter
-pip install -r requirements.txt --upgrade
-```
-
-```powershell
-# For Windows
 pip install -r requirements.txt --upgrade
 ```
 

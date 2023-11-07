@@ -1,3 +1,4 @@
+#!/bin/python3
 import urllib.request
 import os
 from tqdm import tqdm

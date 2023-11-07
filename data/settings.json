@@ -7,7 +7,7 @@
     "engine": "translators",
     "translators_engine_service": "baidu",
     "mode": "light",
-    "text_translate_trigger_mode": "select",
+    "text_translate_trigger_mode": "key",
     "text_translate_shortcut_key": "<f2>",
     "screenshot_translate_shortcut_key": "<f4>",
     "copy_key": "<ctrl>+c",

@@ -647,7 +647,10 @@ class Gui:
         ttk.Style().theme_use("default")
         self.root_.option_clear()
         self.listener_.stop()
-        self.mouse_listener_.stop()
+        try:
+            self.mouse_listener_.stop()
+        except:
+            pass
         self.Init()
         self.root_.geometry(geometry_info)
         self.root_.deiconify()
@@ -715,7 +718,7 @@ class Gui:
 
     def TextTranslate(self):
         pre_content = pyperclip.paste()
-        pyperclip.copy("") # clear clipboard
+        pyperclip.copy("")  # clear clipboard
 
         # with self.kbController_.pressed(kb.Key.ctrl):
         #   self.kbController_.press('c')
@@ -725,9 +728,9 @@ class Gui:
         # sleep here to wait content copied to the clipboard
         time.sleep(0.1)
         content = pyperclip.paste()
+        pyperclip.copy(pre_content)  # recover
         if content == "":  # no new data copied, just return
             return
-        pyperclip.copy(pre_content)  # recover
 
         self.RegisterDoTrans(content=content)
 

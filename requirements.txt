@@ -8,6 +8,6 @@ pytesseract
 tqdm
 openai
 tiktoken
+pyqt5
 pyautogui
 translators
-pyside6

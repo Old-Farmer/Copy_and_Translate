@@ -14,7 +14,7 @@ import pynput.keyboard as keyboard
 from pynput import mouse
 import re
 from googletrans import Translator  # must be >=4.0.0rc1
-from httpcore import SyncHTTPProxy
+from httpcore import AsyncHTTPProxy
 from urllib.parse import urlparse
 import subprocess
 import pytesseract
@@ -218,7 +218,7 @@ class GoogleTranslator:
 
                 self.google_translator = Translator(
                     proxies={
-                        "https": SyncHTTPProxy(
+                        "https": AsyncHTTPProxy(
                             (
                                 bytes(url.scheme, encoding="utf-8"),
                                 bytes(url.hostname, encoding="utf-8"),
@@ -277,7 +277,7 @@ class GoogleTranslator:
                 ip, port = proxy.split(":")
                 self.google_translator = Translator(
                     proxies={
-                        "https": SyncHTTPProxy((b"http", ip.encode(), int(port), b""))
+                        "https": AsyncHTTPProxy((b"http", ip.encode(), int(port), b""))
                     }
                 )  # if can not get proxy from env var, set the proxy manually
             else:

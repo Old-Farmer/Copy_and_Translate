@@ -6,7 +6,7 @@ It is an easy-to-use app which can translate selected text without copying manua
 
 ## Python
 
-This app is developed with **Python 3.10**.
+This app is developed with **Python 3.12**.
 
 ## Platform Support
 
@@ -20,8 +20,9 @@ Here is a **quick start** for Linux users who only use `pip` and `apt` to config
 ```shell
 git clone https://github.com/Old-Farmer/Selextrans.git
 cd Selextrans
-./setup.sh # Set up before first running the app
-./run.py # run the app
+... # do something to acitvate a virtual enviroment
+python3 setup.sh # Set up before first running the app
+python3 run.py # run the app
 ```
 
 ## Dependencies
@@ -47,15 +48,23 @@ sudo apt install xclip tesseract-ocr
 * langid
 * googletrans>=4.0.0rc1
 * httpcore
+* tkinter
 * pytesseract
 * tqdm
 * openai
 * tiktoken
+* pyqt5
 * pyautogui
 * translators
-* pyside6
 
 ```shell
+# Linux
+sudo apt install python3-tk # For tkinter
+... # do something to acitvate a virtual enviroment
+pip install -r requirements.txt --upgrade
+
+# Windows
+... # do something to acitvate a virtual enviroment
 pip install -r requirements.txt --upgrade
 ```
 

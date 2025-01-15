@@ -820,7 +820,7 @@ class Gui:
             elif len(command_args) == 2 and command_args[0] == "edit":
                 if command_args[1] in ("settings", "s"):
                     FileController.openByOSDefaultApp(settings_file)
-                elif command_args[1] == ("configs", "c"):
+                elif command_args[1] in ("configs", "c"):
                     FileController.openByOSDefaultApp(configs_file)
                 else:
                     result = False

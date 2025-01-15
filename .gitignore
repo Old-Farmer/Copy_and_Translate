@@ -10,3 +10,5 @@ private.txt
 tessdata/
 
 *.db
+
+.venv/

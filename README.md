@@ -20,6 +20,7 @@ Here is a **quick start** for Linux users who only use `pip` and `apt` to config
 ```shell
 git clone https://github.com/Old-Farmer/Selextrans.git
 cd Selextrans
+sudo apt install python3
 python3 -m venv .venv
 source .venv/bin/activate
 ./setup.sh # Set up before first running the app
